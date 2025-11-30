@@ -1,0 +1,52 @@
+{
+  "users": {
+    "user_id": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0
+    },
+    "799107594404495413": {
+      "cash": 7428,
+      "bank": 0,
+      "lastWork": 1764455728023,
+      "lastCrime": 1763925405492,
+      "lastSlut": 1763925286440,
+      "lastRob": 1763925431105
+    },
+    "765277872524623912": {
+      "cash": 58908,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0
+    },
+    "470529920351600642": {
+      "cash": 1014,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0
+    },
+    "1061164654346371123": {
+      "cash": 87447,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0
+    },
+    "1281704981560299630": {
+      "cash": 0,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0
+    }
+  }
+}

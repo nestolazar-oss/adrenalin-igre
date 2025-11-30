@@ -1,0 +1,18 @@
+{
+  "799107594404495413": {
+    "totalWins": 2,
+    "totalTime": 26,
+    "avgTime": 13,
+    "bestTime": 4,
+    "difficulties": {
+      "medium": {
+        "wins": 1,
+        "bestTime": 22
+      },
+      "hard": {
+        "wins": 1,
+        "bestTime": 4
+      }
+    }
+  }
+}
