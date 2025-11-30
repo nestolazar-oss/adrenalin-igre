@@ -38,11 +38,11 @@ export async function execute(message, args) {
 
   const embed = new EmbedBuilder()
     .setColor(0x2ECC71)
-    .setTitle('🏦 Depozit Uspješan')
+    .setTitle(`${emoji('bank')} Depozit Uspješan`)
     .setDescription(`Uložili ste **$${amount.toLocaleString()}** u banku`)
     .addFields(
-      { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: true },
-      { name: '🏦 Nova banka', value: `$${user.bank.toLocaleString()}`, inline: true }
+      { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: true },
+      { name: `${emoji('bank')} Nova banka`, value: `$${user.bank.toLocaleString()}`, inline: true }
     )
     .setTimestamp();
 

@@ -9,11 +9,9 @@ export const meta = {
 };
 
 export async function execute(message, args) {
-
   const user = initUser(message.author.id);
   const now = Date.now();
 
-  // ------------ COOLDOWN ------------
   if (user.lastSlut && now - user.lastSlut < COOLDOWNS.SLUT) {
     const remaining = Math.ceil((COOLDOWNS.SLUT - (now - user.lastSlut)) / 1000 / 60);
 
@@ -27,12 +25,10 @@ export async function execute(message, args) {
     });
   }
 
-  // ------------ GENERISANJE REZULTATA ------------
   const response = SLUT_RESPONSES[Math.floor(Math.random() * SLUT_RESPONSES.length)];
   const success = Math.random() > 0.3;
   const amount = Math.floor(Math.random() * (600 - 150 + 1)) + 150;
 
-  // ------------ USPJEH ------------
   if (success) {
     user.cash += amount;
     user.lastSlut = now;
@@ -40,18 +36,17 @@ export async function execute(message, args) {
 
     const embed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle('🚗 Rizik Uspešan!')
+      .setTitle(`${emoji('tada')} Rizik Uspešan!`)
       .setDescription(response)
       .addFields(
-        { name: '💵 Zarada', value: `+$${amount}`, inline: true },
-        { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: true }
+        { name: `${emoji('cash')} Zarada`, value: `+$${amount}`, inline: true },
+        { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: true }
       )
       .setTimestamp();
 
     return message.reply({ embeds: [embed] });
   }
 
-  // ------------ NEUSPJEH ------------
   const lost = Math.floor(amount / 2);
 
   user.cash = Math.max(0, user.cash - lost);
@@ -60,10 +55,10 @@ export async function execute(message, args) {
 
   const embed = new EmbedBuilder()
     .setColor(0xE74C3C)
-    .setTitle('🚗 Rizik Neuspešan!')
+    .setTitle(`${emoji('bomb')} Rizik Neuspešan!`)
     .setDescription(`Nešto je pošlo naopako! Izgubio si **$${lost}**`)
     .addFields({
-      name: '💵 Nova gotovina',
+      name: `${emoji('cash')} Nova gotovina`,
       value: `$${user.cash.toLocaleString()}`,
       inline: false
     })

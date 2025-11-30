@@ -11,34 +11,30 @@ export async function execute(message, args) {
   let bet = args[0];
 
   if (!bet) {
-    return message.reply('❌ Koristi: `-towers <bet|all|half>`');
+    return message.reply(`${emoji('error')} Koristi: \`-towers <bet|all|half>\``);
   }
 
   if (bet === 'all') bet = user.cash;
   else if (bet === 'half') bet = Math.floor(user.cash / 2);
   else bet = parseInt(bet);
 
-  if (isNaN(bet) || bet <= 0) return message.reply('❌ Unesite validan ulog!');
-  if (bet > user.cash) return message.reply('❌ Nemate toliko novca!');
+  if (isNaN(bet) || bet <= 0) return message.reply(`${emoji('error')} Unesite validan ulog!`);
+  if (bet > user.cash) return message.reply(`${emoji('error')} Nemate toliko novca!`);
 
   user.cash -= bet;
   updateUser(message.author.id, user);
 
   const LEVELS = 10;
-  const towers = Array(LEVELS).fill(0).map(() => Math.random() > 0.5 ? '💣' : '💎');
+  const towers = Array(LEVELS).fill(0).map(() => Math.random() > 0.5 ? emoji('bomb') : emoji('gem'));
   const revealed = new Array(LEVELS).fill(false);
 
   let currentLevel = 0;
   let gameOver = false;
   let currentWinnings = bet;
 
-  // ---------------------
-  //  KREIRANJE DUGMADI
-  // ---------------------
   const createBoard = () => {
     const rows = [];
 
-    // 3 dugmeta po redu — 10 levela = 4 reda
     for (let i = 0; i < LEVELS; i += 3) {
       const row = new ActionRowBuilder();
 
@@ -49,12 +45,12 @@ export async function execute(message, args) {
         let label = `${level + 1}`;
 
         if (revealed[level]) {
-          if (towers[level] === '💣') {
+          if (towers[level] === emoji('bomb')) {
             style = ButtonStyle.Danger;
-            label = '💣';
+            label = emoji('bomb');
           } else {
             style = ButtonStyle.Success;
-            label = '💎';
+            label = emoji('gem');
           }
         }
 
@@ -70,7 +66,6 @@ export async function execute(message, args) {
       rows.push(row);
     }
 
-    // 5. red — Cashout & Exit
     rows.push(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -90,22 +85,18 @@ export async function execute(message, args) {
     return rows;
   };
 
-  // ---------------------
-  // Embed za prikaz igre
-  // ---------------------
   const updateEmbed = () => {
     return new EmbedBuilder()
       .setColor(0x2596BE)
-      .setTitle(`🗼 Towers - Ulog: $${bet}`)
+      .setTitle(`${emoji('target')} Towers - Ulog: $${bet}`)
       .addFields(
-        { name: '🎯 Level', value: `${currentLevel}/${LEVELS}`, inline: true },
-        { name: '📊 Multiplikator', value: `${(1 + currentLevel * 0.25).toFixed(2)}x`, inline: true },
-        { name: '💰 Moguća nagrada', value: `$${currentWinnings}`, inline: true }
+        { name: `${emoji('dice')} Level`, value: `${currentLevel}/${LEVELS}`, inline: true },
+        { name: `${emoji('lightning')} Multiplikator`, value: `${(1 + currentLevel * 0.25).toFixed(2)}x`, inline: true },
+        { name: `${emoji('coins')} Moguća nagrada`, value: `$${currentWinnings}`, inline: true }
       )
       .setFooter({ text: 'Svakim levelom multiplikator raste!' });
   };
 
-  // Prva poruka
   const msg = await message.reply({
     embeds: [updateEmbed()],
     components: createBoard()
@@ -113,37 +104,30 @@ export async function execute(message, args) {
 
   const collector = msg.createMessageComponentCollector({ time: 300000 });
 
-  // ---------------------
-  // HANDLANJE INTERAKCIJA
-  // ---------------------
   collector.on('collect', async (interaction) => {
     if (interaction.user.id !== message.author.id) {
-      return interaction.reply({ content: '❌ Ovo nije tvoja igra!', ephemeral: true });
+      return interaction.reply({ content: `${emoji('error')} Ovo nije tvoja igra!`, ephemeral: true });
     }
 
     const id = interaction.customId;
 
-    // ---------------------
-    // LEVEL KLIK
-    // ---------------------
     if (id.startsWith('tower_level_')) {
       const level = parseInt(id.replace('tower_level_', ''));
 
       if (level !== currentLevel) {
-        return interaction.reply({ content: '❌ Moraš ići po redu!', ephemeral: true });
+        return interaction.reply({ content: `${emoji('error')} Moraš ići po redu!`, ephemeral: true });
       }
 
       revealed[level] = true;
 
-      if (towers[level] === '💣') {
-        // BOMBA → poraz
+      if (towers[level] === emoji('bomb')) {
         gameOver = true;
 
         const loseEmbed = new EmbedBuilder()
           .setColor(0xE74C3C)
-          .setTitle('💥 Pogodio Si Bombu!')
+          .setTitle(`${emoji('bomb')} Pogodio Si Bombu!`)
           .setDescription(`Izgubio si $${bet}`)
-          .addFields({ name: '💵 Nova gotovina', value: `$${user.cash}` });
+          .addFields({ name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash}` });
 
         collector.stop();
         return interaction.update({
@@ -152,11 +136,9 @@ export async function execute(message, args) {
         });
       }
 
-      // Pogodio dijamant — nastavljaš
       currentLevel++;
       currentWinnings = Math.floor(bet * (1 + currentLevel * 0.25));
 
-      // Pobeda — stigao do kraja
       if (currentLevel >= LEVELS) {
         gameOver = true;
         user.cash += currentWinnings;
@@ -164,11 +146,11 @@ export async function execute(message, args) {
 
         const winEmbed = new EmbedBuilder()
           .setColor(0x2ECC71)
-          .setTitle('🎉 Stigao Si na Vrh!')
+          .setTitle(`${emoji('celebration')} Stigao Si na Vrh!`)
           .setDescription(`Zaradio si **$${currentWinnings - bet}**!`)
           .addFields(
-            { name: '💰 Nagrada', value: `$${currentWinnings}`, inline: true },
-            { name: '💵 Nova gotovina', value: `$${user.cash}`, inline: true }
+            { name: `${emoji('coins')} Nagrada`, value: `$${currentWinnings}`, inline: true },
+            { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash}`, inline: true }
           );
 
         collector.stop();
@@ -178,16 +160,12 @@ export async function execute(message, args) {
         });
       }
 
-      // Nastavak igre
       return interaction.update({
         embeds: [updateEmbed()],
         components: createBoard()
       });
     }
 
-    // ---------------------
-    // CASHOUT
-    // ---------------------
     if (id === 'towers_cashout') {
       gameOver = true;
       user.cash += currentWinnings;
@@ -195,11 +173,11 @@ export async function execute(message, args) {
 
       const cashoutEmbed = new EmbedBuilder()
         .setColor(0x2ECC71)
-        .setTitle('🎉 Uspešan Cashout!')
+        .setTitle(`${emoji('celebration')} Uspešan Cashout!`)
         .setDescription(`Zaradio si **$${currentWinnings - bet}**!`)
         .addFields(
-          { name: '💰 Nagrada', value: `$${currentWinnings}`, inline: true },
-          { name: '💵 Nova gotovina', value: `$${user.cash}`, inline: true }
+          { name: `${emoji('coins')} Nagrada`, value: `$${currentWinnings}`, inline: true },
+          { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash}`, inline: true }
         );
 
       collector.stop();
@@ -209,15 +187,12 @@ export async function execute(message, args) {
       });
     }
 
-    // ---------------------
-    // EXIT
-    // ---------------------
     if (id === 'towers_exit') {
       gameOver = true;
 
       const exitEmbed = new EmbedBuilder()
         .setColor(0xF1C40F)
-        .setTitle('❌ Napustio Si Igru')
+        .setTitle(`${emoji('error')} Napustio Si Igru`)
         .setDescription(`Izgubio si $${bet}`);
 
       collector.stop();

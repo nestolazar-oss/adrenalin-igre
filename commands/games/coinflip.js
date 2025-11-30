@@ -14,15 +14,15 @@ export async function execute(message, args) {
   const choice = args[1]?.toLowerCase();
 
   if (!bet || !choice || !['pismo', 'glava'].includes(choice)) {
-    return message.reply('❌ Koristi: `-coinflip <bet|all|half> <pismo|glava>`');
+    return message.reply(`${emoji('error')} Koristi: \`-coinflip <bet|all|half> <pismo|glava>\``);
   }
 
   if (bet === 'all') bet = user.cash;
   else if (bet === 'half') bet = Math.floor(user.cash / 2);
   else bet = parseInt(bet);
 
-  if (isNaN(bet) || bet <= 0) return message.reply('❌ Unesite validan ulog!');
-  if (bet > user.cash) return message.reply('❌ Nemate toliko novca!');
+  if (isNaN(bet) || bet <= 0) return message.reply(`${emoji('error')} Unesite validan ulog!`);
+  if (bet > user.cash) return message.reply(`${emoji('error')} Nemate toliko novca!`);
 
   const result = Math.random() > 0.5 ? 'glava' : 'pismo';
   const win = choice === result;
@@ -35,11 +35,11 @@ export async function execute(message, args) {
 
     const embed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle('🪙 Pobijedio Si!')
+      .setTitle(`${emoji('celebration')} Pobijedio Si!`)
       .setDescription(`Odabrao si **${choice}** i pogodio si!\nRezultat je bio **${result}**`)
       .addFields(
-        { name: '💰 Dobit', value: `$${bet}`, inline: true },
-        { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: true }
+        { name: `${emoji('coins')} Dobit`, value: `$${bet}`, inline: true },
+        { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: true }
       )
       .setTimestamp();
 
@@ -49,11 +49,11 @@ export async function execute(message, args) {
 
     const embed = new EmbedBuilder()
       .setColor(0xE74C3C)
-      .setTitle('🪙 Izgubio Si!')
+      .setTitle(`${emoji('error')} Izgubio Si!`)
       .setDescription(`Odabrao si **${choice}** ali je rezultat bio **${result}**`)
       .addFields(
-        { name: '💸 Gubitak', value: `-$${bet}`, inline: true },
-        { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: true }
+        { name: `${emoji('bomb')} Gubitak`, value: `-$${bet}`, inline: true },
+        { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: true }
       )
       .setTimestamp();
 

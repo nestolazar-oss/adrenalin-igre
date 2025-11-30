@@ -1,0 +1,99 @@
+├── .env
+├── commands
+│   ├── admin
+│   │   ├── addmoney.js
+│   │   └── removemoney.js
+│   ├── economy
+│   │   ├── balance.js
+│   │   ├── deposit.js
+│   │   ├── leaderboard.js
+│   │   ├── send.js
+│   │   └── withdraw.js
+│   ├── fun
+│   │   └── actions.js
+│   ├── games
+│   │   ├── blackjack.js
+│   │   ├── coinflip.js
+│   │   ├── flags.js
+│   │   ├── guess.js
+│   │   ├── memory.js
+│   │   ├── mines.js
+│   │   ├── riddle.js
+│   │   ├── roulette.js
+│   │   ├── towers.js
+│   │   ├── trivia.js
+│   │   ├── word.js
+│   │   └── words.txt
+│   ├── general
+│   │   ├── avatar.js
+│   │   ├── avatarbanner.js
+│   │   ├── banner.js
+│   │   ├── botinfo.js
+│   │   ├── inviter.js
+│   │   ├── invites.js
+│   │   ├── leaderboard.js
+│   │   ├── messages.js
+│   │   ├── profile.js
+│   │   ├── reminders.js
+│   │   ├── resetinvites.js
+│   │   ├── serverinfo.js
+│   │   ├── stats.js
+│   │   └── suggestions.js
+│   ├── giveaway
+│   │   ├── glist.js
+│   │   ├── greroll.js
+│   │   └── gstart.js
+│   ├── info
+│   │   └── help.js
+│   ├── moderation
+│   │   ├── antihoist.js
+│   │   ├── ban.js
+│   │   ├── cleartimeout.js
+│   │   ├── kick.js
+│   │   ├── nuke.js
+│   │   ├── perm.js
+│   │   ├── poll.js
+│   │   ├── purge.js
+│   │   ├── report.js
+│   │   ├── tempban.js
+│   │   ├── temprole.js
+│   │   ├── timeout.js
+│   │   ├── unban.js
+│   │   ├── unwarn.js
+│   │   ├── warn.js
+│   │   └── warnlist.js
+│   ├── tickets
+│   │   ├── tadd.js
+│   │   ├── talert.js
+│   │   ├── tblacklist.js
+│   │   ├── tclose.js
+│   │   ├── tpanel.js
+│   │   ├── tpriority.js
+│   │   ├── tremove.js
+│   │   ├── trename.js
+│   │   └── tstats.js
+│   └── work
+│       ├── crime.js
+│       ├── rob.js
+│       ├── slut.js
+│       └── work.js
+├── data
+│   ├── guess_leaderboard.json
+│   ├── word_game.json
+│   ├── word_leaderboard.json
+│   └── word_stats.json
+├── economy.json
+├── generateCountries.js
+├── index.js
+
+├── package-lock.json
+├── package.json
+├── paste.txt
+├── structure.txt
+├── tree.js
+└── utils
+    ├── constants.js
+    ├── db.js
+    ├── embeds.js
+    ├── emojis.js
+    └── gifApi.js

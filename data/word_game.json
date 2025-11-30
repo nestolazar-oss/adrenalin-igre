@@ -1,0 +1,30 @@
+{
+  "1383535893842890892": {
+    "1383541910383231077": {
+      "799107594404495413": {
+        "wins": 4,
+        "fastestTime": 10,
+        "attempts": 4,
+        "totalTime": 48
+      },
+      "1402049528185618572": {
+        "wins": 2,
+        "fastestTime": 3,
+        "attempts": 2,
+        "totalTime": 7
+      },
+      "1439062988316479714": {
+        "wins": 1,
+        "fastestTime": 5,
+        "attempts": 1,
+        "totalTime": 5
+      },
+      "1411045320489697446": {
+        "wins": 1,
+        "fastestTime": 4,
+        "attempts": 1,
+        "totalTime": 4
+      }
+    }
+  }
+}

@@ -20,13 +20,13 @@ export async function execute(message, args) {
   
   const embed = new EmbedBuilder()
     .setColor(0x2596BE)
-    .setTitle(`💰 ${user.username} - Bankovni račun`)
+    .setTitle(`${emoji('coins')} ${user.username} - Bankovni račun`)
     .setThumbnail(user.displayAvatarURL({ dynamic: true }))
     .addFields(
-      { name: '💵 Gotovina', value: `$${userData.cash.toLocaleString()}`, inline: true },
-      { name: '🏦 Banka', value: `$${userData.bank.toLocaleString()}`, inline: true },
-      { name: '📊 Ukupno', value: `$${(userData.cash + userData.bank).toLocaleString()}`, inline: true },
-      { name: '🏆 Rang', value: `#${rank} od ${Object.keys(allUsers).length}`, inline: true }
+      { name: `${emoji('cash')} Gotovina`, value: `$${userData.cash.toLocaleString()}`, inline: true },
+      { name: `${emoji('bank')} Banka`, value: `$${userData.bank.toLocaleString()}`, inline: true },
+      { name: `${emoji('wallet')} Ukupno`, value: `$${(userData.cash + userData.bank).toLocaleString()}`, inline: true },
+      { name: `${emoji('trophy')} Rang`, value: `#${rank} od ${Object.keys(allUsers).length}`, inline: true }
     )
     .setFooter({ text: 'Adrenalin Banka' })
     .setTimestamp();

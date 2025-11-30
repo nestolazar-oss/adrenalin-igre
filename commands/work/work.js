@@ -12,7 +12,6 @@ export async function execute(message, args) {
   const user = initUser(message.author.id);
   const now = Date.now();
 
-  // ---- COOLDOWN ----
   if (user.lastWork && now - user.lastWork < COOLDOWNS.WORK) {
     const remaining = Math.ceil((COOLDOWNS.WORK - (now - user.lastWork)) / 1000 / 60);
 
@@ -26,7 +25,6 @@ export async function execute(message, args) {
     });
   }
 
-  // ---- RANDOM POSAO ----
   const job = JOBS[Math.floor(Math.random() * JOBS.length)];
   const earnings = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
 
@@ -34,12 +32,11 @@ export async function execute(message, args) {
   user.lastWork = now;
   updateUser(message.author.id, user);
 
-  // ---- SUCCESS EMBED ----
   const embed = new EmbedBuilder()
     .setColor(0x2ECC71)
-    .setTitle('💼 Rad Kompletan!')
+    .setTitle(`${emoji('tada')} Rad Kompletan!`)
     .setDescription(`Radio si kao **${job}** i zaradio si **$${earnings}**`)
-    .addFields({ name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}` })
+    .addFields({ name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}` })
     .setTimestamp();
 
   return message.reply({ embeds: [embed] });

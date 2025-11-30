@@ -52,20 +52,19 @@ export async function execute(message, args) {
   let bet = args[0];
 
   if (!bet) {
-    return message.reply('❌ Koristi: `-bj <bet|all|half>`');
+    return message.reply(`${emoji('error')} Koristi: \`-bj <bet|all|half>\``);
   }
 
   if (bet === 'all') bet = user.cash;
   else if (bet === 'half') bet = Math.floor(user.cash / 2);
   else bet = parseInt(bet);
 
-  if (isNaN(bet) || bet <= 0) return message.reply('❌ Unesite validan ulog!');
-  if (bet > user.cash) return message.reply('❌ Nemate toliko novca!');
+  if (isNaN(bet) || bet <= 0) return message.reply(`${emoji('error')} Unesite validan ulog!`);
+  if (bet > user.cash) return message.reply(`${emoji('error')} Nemate toliko novca!`);
 
   user.cash -= bet;
   updateUser(message.author.id, user);
 
-  // Igrač počinje sa 1 kartom
   const playerCards = [generateCard()];
   const dealerCards = [generateCard(), generateCard()];
   
@@ -112,10 +111,10 @@ export async function execute(message, args) {
 
     return new EmbedBuilder()
       .setColor(0x2596BE)
-      .setTitle(`🎴 Blackjack - Ulog: $${bet}`)
+      .setTitle(`${emoji('cards')} Blackjack - Ulog: $${bet}`)
       .addFields(
-        { name: '👤 Tvoja ruka', value: `${playerCards.join(' ')} = **${playerValue}**`, inline: true },
-        { name: '🤖 Dealer ruka', value: playerStand ? `${dealerCards.join(' ')} = **${dealerValue}**` : `${dealerCards[0]} 🂠`, inline: true }
+        { name: `👤 Tvoja ruka`, value: `${playerCards.join(' ')} = **${playerValue}**`, inline: true },
+        { name: `${emoji('trophy')} Dealer ruka`, value: playerStand ? `${dealerCards.join(' ')} = **${dealerValue}**` : `${dealerCards[0]} 🂠`, inline: true }
       )
       .setFooter({ text: gameOver ? 'Igra je gotova' : 'Tvoj red je...' });
   };
@@ -129,7 +128,7 @@ export async function execute(message, args) {
 
   collector.on('collect', async (interaction) => {
     if (interaction.user.id !== message.author.id) {
-      return interaction.reply({ content: '❌ Ovo nije tvoja igra!', ephemeral: true });
+      return interaction.reply({ content: `${emoji('error')} Ovo nije tvoja igra!`, ephemeral: true });
     }
 
     if (interaction.customId === 'bj_hit') {
@@ -140,10 +139,10 @@ export async function execute(message, args) {
         gameOver = true;
         const bustEmbed = new EmbedBuilder()
           .setColor(0xE74C3C)
-          .setTitle('💥 Bust! Izgubio Si!')
+          .setTitle(`${emoji('bomb')} Bust! Izgubio Si!`)
           .setDescription(`Prekoračio si 21 (${playerValue})`)
           .addFields(
-            { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: false }
+            { name: `${emoji('coins')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: false }
           );
 
         collector.stop();
@@ -176,19 +175,19 @@ export async function execute(message, args) {
       let winAmount = 0;
 
       if (dealerValue > 21) {
-        result = '🎉 Dealer je dao bust! Pobedio si!';
+        result = `${emoji('celebration')} Dealer je dao bust! Pobedio si!`;
         color = 0x2ECC71;
         winAmount = bet * 2;
       } else if (playerValue > dealerValue) {
-        result = '🎉 Pobedio si!';
+        result = `${emoji('celebration')} Pobedio si!`;
         color = 0x2ECC71;
         winAmount = bet * 2;
       } else if (playerValue === dealerValue) {
-        result = '🤝 Push! Vraćen ti je ulog!';
+        result = `${emoji('thinking')} Push! Vraćen ti je ulog!`;
         color = 0xF1C40F;
         winAmount = bet;
       } else {
-        result = '😢 Dealer je pobedio!';
+        result = `${emoji('error')} Dealer je pobedio!`;
         color = 0xE74C3C;
         winAmount = 0;
       }
@@ -198,13 +197,13 @@ export async function execute(message, args) {
 
       const resultEmbed = new EmbedBuilder()
         .setColor(color)
-        .setTitle('🎴 Blackjack - Rezultat')
+        .setTitle(`${emoji('cards')} Blackjack - Rezultat`)
         .setDescription(result)
         .addFields(
           { name: '👤 Tvoja ruka', value: `${playerCards.join(' ')} = **${playerValue}**`, inline: true },
-          { name: '🤖 Dealer ruka', value: `${dealerCards.join(' ')} = **${dealerValue}**`, inline: true },
-          { name: '💰 Nagrada', value: `$${winAmount - bet}`, inline: false },
-          { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: false }
+          { name: `${emoji('trophy')} Dealer ruka`, value: `${dealerCards.join(' ')} = **${dealerValue}**`, inline: true },
+          { name: `${emoji('coins')} Nagrada`, value: `$${winAmount - bet}`, inline: false },
+          { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: false }
         );
 
       collector.stop();
@@ -218,7 +217,7 @@ export async function execute(message, args) {
       const extraBet = bet;
       
       if (user.cash < extraBet) {
-        return interaction.reply({ content: '❌ Nemaš dovoljno novca za Double Down!', ephemeral: true });
+        return interaction.reply({ content: `${emoji('error')} Nemaš dovoljno novca za Double Down!`, ephemeral: true });
       }
 
       user.cash -= extraBet;
@@ -243,22 +242,22 @@ export async function execute(message, args) {
       let winAmount = 0;
 
       if (playerValue > 21) {
-        result = '💥 Bust! Izgubio si!';
+        result = `${emoji('bomb')} Bust! Izgubio si!`;
         color = 0xE74C3C;
       } else if (dealerValue > 21) {
-        result = '🎉 Dealer je dao bust! Pobedio si!';
+        result = `${emoji('celebration')} Dealer je dao bust! Pobedio si!`;
         color = 0x2ECC71;
         winAmount = bet * 2;
       } else if (playerValue > dealerValue) {
-        result = '🎉 Pobedio si sa Double Down!';
+        result = `${emoji('celebration')} Pobedio si sa Double Down!`;
         color = 0x2ECC71;
         winAmount = bet * 2;
       } else if (playerValue === dealerValue) {
-        result = '🤝 Push!';
+        result = `${emoji('thinking')} Push!`;
         color = 0xF1C40F;
         winAmount = bet;
       } else {
-        result = '😢 Dealer je pobedio!';
+        result = `${emoji('error')} Dealer je pobedio!`;
         color = 0xE74C3C;
       }
 
@@ -267,12 +266,12 @@ export async function execute(message, args) {
 
       const ddEmbed = new EmbedBuilder()
         .setColor(color)
-        .setTitle('🎴 Blackjack - Double Down!')
+        .setTitle(`${emoji('cards')} Blackjack - Double Down!`)
         .setDescription(result)
         .addFields(
           { name: '👤 Tvoja ruka', value: `${playerCards.join(' ')} = **${playerValue}**`, inline: true },
-          { name: '🤖 Dealer ruka', value: `${dealerCards.join(' ')} = **${dealerValue}**`, inline: true },
-          { name: '💰 Nagrada', value: `$${winAmount - bet}`, inline: false }
+          { name: `${emoji('trophy')} Dealer ruka`, value: `${dealerCards.join(' ')} = **${dealerValue}**`, inline: true },
+          { name: `${emoji('coins')} Nagrada`, value: `$${winAmount - bet}`, inline: false }
         );
 
       collector.stop();
@@ -286,7 +285,7 @@ export async function execute(message, args) {
       gameOver = true;
       const exitEmbed = new EmbedBuilder()
         .setColor(0xF1C40F)
-        .setTitle('❌ Napustio Si Igru')
+        .setTitle(`${emoji('error')} Napustio Si Igru`)
         .setDescription(`Izgubio si $${bet}`);
 
       collector.stop();

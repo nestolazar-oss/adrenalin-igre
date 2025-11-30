@@ -1,15 +1,55 @@
 {
   "799107594404495413": {
-    "totalWins": 2,
-    "totalTime": 26,
-    "avgTime": 13,
+    "totalWins": 7,
+    "totalTime": 79,
+    "avgTime": 11,
     "bestTime": 4,
     "difficulties": {
       "medium": {
-        "wins": 1,
-        "bestTime": 22
+        "wins": 2,
+        "bestTime": 5
       },
       "hard": {
+        "wins": 1,
+        "bestTime": 4
+      },
+      "easy": {
+        "wins": 4,
+        "bestTime": 10
+      }
+    }
+  },
+  "1402049528185618572": {
+    "totalWins": 2,
+    "totalTime": 7,
+    "avgTime": 4,
+    "bestTime": 3,
+    "difficulties": {
+      "easy": {
+        "wins": 2,
+        "bestTime": 3
+      }
+    }
+  },
+  "1439062988316479714": {
+    "totalWins": 1,
+    "totalTime": 5,
+    "avgTime": 5,
+    "bestTime": 5,
+    "difficulties": {
+      "easy": {
+        "wins": 1,
+        "bestTime": 5
+      }
+    }
+  },
+  "1411045320489697446": {
+    "totalWins": 1,
+    "totalTime": 4,
+    "avgTime": 4,
+    "bestTime": 4,
+    "difficulties": {
+      "easy": {
         "wins": 1,
         "bestTime": 4
       }

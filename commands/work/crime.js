@@ -12,7 +12,6 @@ export async function execute(message, args) {
   const user = initUser(message.author.id);
   const now = Date.now();
 
-  // ---- COOLDOWN ----
   if (user.lastCrime && now - user.lastCrime < COOLDOWNS.CRIME) {
     const remaining = Math.ceil((COOLDOWNS.CRIME - (now - user.lastCrime)) / 1000 / 60);
 
@@ -30,7 +29,6 @@ export async function execute(message, args) {
   const success = Math.random() > 0.5;
   const amount = Math.floor(Math.random() * (800 - 200 + 1)) + 200;
 
-  // ---- USPJEH ----
   if (success) {
     user.cash += amount;
     user.lastCrime = now;
@@ -38,28 +36,27 @@ export async function execute(message, args) {
 
     const embed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle('🔫 Zločin Uspešan!')
+      .setTitle(`${emoji('tada')} Zločin Uspešan!`)
       .setDescription(response)
       .addFields(
-        { name: '💵 Zarada', value: `+$${amount}`, inline: true },
-        { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: true }
+        { name: `${emoji('coins')} Zarada`, value: `+$${amount}`, inline: true },
+        { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: true }
       )
       .setTimestamp();
 
     return message.reply({ embeds: [embed] });
   }
 
-  // ---- NEUSPJEH ----
   user.cash = Math.max(0, user.cash - amount);
   user.lastCrime = now;
   updateUser(message.author.id, user);
 
   const embed = new EmbedBuilder()
     .setColor(0xE74C3C)
-    .setTitle('🔫 Zločin Neuspešan!')
+    .setTitle(`${emoji('warn')} Zločin Neuspešan!`)
     .setDescription(`Uhvaćen si! Izgubio si **$${amount}**`)
     .addFields(
-      { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: false }
+      { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: false }
     )
     .setTimestamp();
 

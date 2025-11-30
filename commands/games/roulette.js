@@ -24,11 +24,11 @@ export async function execute(message, args) {
   const validOptions = ['red', 'black', '1-18', '19-36', 'even', 'odd', '1-12', '13-24', '25-36', '1st', '2nd', '3rd'];
 
   if (!option || !validOptions.includes(option)) {
-    return message.reply(`❌ Koristi: \`-roulette <${validOptions.join('|')}> <bet|all|half>\``);
+    return message.reply(`${emoji('error')} Koristi: \`-roulette <${validOptions.join('|')}> <bet|all|half>\``);
   }
 
   if (!bet) {
-    return message.reply('❌ Unesite ulog!');
+    return message.reply(`${emoji('error')} Unesite ulog!`);
   }
 
   const user = initUser(message.author.id);
@@ -37,13 +37,12 @@ export async function execute(message, args) {
   else if (bet === 'half') bet = Math.floor(user.cash / 2);
   else bet = parseInt(bet);
 
-  if (isNaN(bet) || bet <= 0) return message.reply('❌ Unesite validan ulog!');
-  if (bet > user.cash) return message.reply('❌ Nemate toliko novca!');
+  if (isNaN(bet) || bet <= 0) return message.reply(`${emoji('error')} Unesite validan ulog!`);
+  if (bet > user.cash) return message.reply(`${emoji('error')} Nemate toliko novca!`);
 
   const channelId = message.channelId;
   let roundData = activeRounds.get(channelId);
 
-  // Ako nema aktivne runde, kreiraj novu
   if (!roundData) {
     roundData = {
       bets: {},
@@ -58,7 +57,6 @@ export async function execute(message, args) {
     startRoundTimer(message.channel, channelId, roundData);
   }
 
-  // Dodaj korisnikov ulog
   if (!roundData.bets[message.author.id]) {
     roundData.bets[message.author.id] = [];
   }
@@ -71,11 +69,11 @@ export async function execute(message, args) {
   const betCount = Object.keys(roundData.bets).length;
   const embed = new EmbedBuilder()
     .setColor(0x2596BE)
-    .setTitle('🎡 Rulet - Runda u Toku')
+    .setTitle(`${emoji('dice')} Rulet - Runda u Toku`)
     .setDescription(`${message.author.tag} je stavio **$${bet}** na **${option.toUpperCase()}**`)
     .addFields(
-      { name: '⏱️ Vreme do izvlačenja', value: `${roundData.timeLeft}s`, inline: true },
-      { name: '👥 Igrači', value: `${betCount}`, inline: true }
+      { name: `${emoji('timer')} Vreme do izvlačenja`, value: `${roundData.timeLeft}s`, inline: true },
+      { name: `${emoji('trophy')} Igrači`, value: `${betCount}`, inline: true }
     )
     .setFooter({ text: 'Vrati se do 30 sekundi da postaviš novu uloga!' });
 
@@ -90,11 +88,11 @@ function startRoundTimer(channel, channelId, roundData) {
     
     const embed = new EmbedBuilder()
       .setColor(0x2596BE)
-      .setTitle('🎡 Rulet - Runda u Toku')
+      .setTitle(`${emoji('dice')} Rulet - Runda u Toku`)
       .setDescription(`Runda je počela! Ulozi su primljeni.`)
       .addFields(
-        { name: '⏱️ Vreme do izvlačenja', value: `**${roundData.timeLeft}s**`, inline: true },
-        { name: '👥 Igrači', value: `${betCount}`, inline: true }
+        { name: `${emoji('timer')} Vreme do izvlačenja`, value: `**${roundData.timeLeft}s**`, inline: true },
+        { name: `${emoji('trophy')} Igrači`, value: `${betCount}`, inline: true }
       )
       .setFooter({ text: `Ukupno igrača: ${betCount}` });
 
@@ -103,9 +101,7 @@ function startRoundTimer(channel, channelId, roundData) {
     } else {
       try {
         await msg.edit({ embeds: [embed] });
-      } catch (e) {
-        // Ignorisi greške ako poruka ne postoji
-      }
+      } catch (e) {}
     }
   };
 
@@ -163,18 +159,18 @@ async function rollRoulette(channel, roundData, channelId) {
   let description = `\n**${color} Rezultat: ${result}**\n`;
 
   if (winners.length > 0) {
-    description += `\n**🏆 Pobjednici:**\n`;
+    description += `\n**${emoji('trophy')} Pobjednici:**\n`;
     for (const userId of winners) {
       const data = winnings[userId];
       description += `<@${userId}> - **+$${data.total}**\n`;
     }
   } else {
-    description += `\n**😢 Nema pobednika ovog puta!**`;
+    description += `\n**${emoji('error')} Nema pobednika ovog puta!**`;
   }
 
   const embed = new EmbedBuilder()
     .setColor(result === 0 ? 0x27AE60 : (result % 2 === 0 ? 0x2C3E50 : 0xC0392B))
-    .setTitle('🎡 Rulet - Izvlačenje!')
+    .setTitle(`${emoji('dice')} Rulet - Izvlačenje!`)
     .setDescription(description)
     .setTimestamp();
 

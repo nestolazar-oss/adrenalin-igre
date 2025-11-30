@@ -33,7 +33,6 @@ export async function execute(message, args) {
   const victim = initUser(target.id);
   const now = Date.now();
 
-  // --- COOLDOWN ---
   if (robber.lastRob && now - robber.lastRob < COOLDOWNS.ROB) {
     const remaining = Math.ceil((COOLDOWNS.ROB - (now - robber.lastRob)) / 1000 / 60);
 
@@ -52,7 +51,6 @@ export async function execute(message, args) {
   const maxAmount = Math.floor(victim.cash * 0.5);
   const stealAmount = Math.floor(Math.random() * (maxAmount - 1)) + 1;
 
-  // --- USPJEH ---
   if (success) {
     victim.cash -= stealAmount;
     robber.cash += stealAmount;
@@ -63,25 +61,24 @@ export async function execute(message, args) {
 
     const embed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle('🏃 Pljačka Uspešna!')
+      .setTitle(`${emoji('tada')} Pljačka Uspešna!`)
       .setDescription(`Uspešno si opljačkao ${target.tag}!`)
       .addFields(
-        { name: '💰 Zarada', value: `+$${stealAmount}`, inline: true },
-        { name: '💵 Tvoja nova gotovina', value: `$${robber.cash.toLocaleString()}`, inline: true },
-        { name: '😭 Žrtvina nova gotovina', value: `$${victim.cash.toLocaleString()}`, inline: true }
+        { name: `${emoji('coins')} Zarada`, value: `+$${stealAmount}`, inline: true },
+        { name: `${emoji('cash')} Tvoja nova gotovina`, value: `$${robber.cash.toLocaleString()}`, inline: true },
+        { name: `${emoji('bomb')} Žrtvina nova gotovina`, value: `$${victim.cash.toLocaleString()}`, inline: true }
       )
       .setTimestamp();
 
     return message.reply({ embeds: [embed] });
   }
 
-  // --- NEUSPJEH ---
   robber.lastRob = now;
   updateUser(message.author.id, robber);
 
   const embed = new EmbedBuilder()
     .setColor(0xE74C3C)
-    .setTitle('🏃 Pljačka Neuspešna!')
+    .setTitle(`${emoji('warn')} Pljačka Neuspešna!`)
     .setDescription(`${target.tag} te je uhvatio! Nisi ništa ukrao.`)
     .setTimestamp();
 

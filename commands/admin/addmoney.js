@@ -11,18 +11,18 @@ export async function execute(message, args) {
   const OWNER_ID = process.env.OWNER_ID || '799107594404495413';
   
   if (message.author.id !== OWNER_ID) {
-    return message.reply('❌ Samo vlasnik bota može koristiti ovu komandu!');
+    return message.reply(`${emoji('reject')} Samo vlasnik bota može koristiti ovu komandu!`);
   }
 
   const target = message.mentions.users.first();
   const amount = parseInt(args[1]);
 
   if (!target) {
-    return message.reply('❌ Označi korisnika! Koristi: `-addmoney @user <amount>`');
+    return message.reply(`${emoji('error')} Označi korisnika! Koristi: \`-addmoney @user <amount>\``);
   }
 
   if (isNaN(amount) || amount <= 0) {
-    return message.reply('❌ Unesite validan iznos!');
+    return message.reply(`${emoji('error')} Unesite validan iznos!`);
   }
 
   const user = initUser(target.id);
@@ -31,10 +31,10 @@ export async function execute(message, args) {
 
   const embed = new EmbedBuilder()
     .setColor(0x2ECC71)
-    .setTitle('💰 Dodano Novca')
+    .setTitle(`${emoji('coins')} Dodano Novca`)
     .setDescription(`${target.tag} je dobio **$${amount}**`)
     .addFields(
-      { name: '💵 Nova gotovina', value: `$${user.cash.toLocaleString()}`, inline: false }
+      { name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: false }
     )
     .setTimestamp();
 

@@ -3,9 +3,13 @@ import { initUser, updateUser } from '../../utils/db.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { CUSTOM_EMOJIS } from '../../utils/emojis.js'; // <- dodaj svoj fajl sa emoji-jima!
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// GLOBAL EMOJI FUNKCIJA
+global.emoji = (key) => CUSTOM_EMOJIS[key] || '❓';
 
 export const meta = {
   name: 'guess',
@@ -50,7 +54,7 @@ async function loadLeaderboards() {
       }
       leaderboards.set(channelId, userMap);
     }
-    console.log('📊 Guess Game: Leaderboard učitan');
+    console.log(`${emoji('stats')} Guess Game: Leaderboard učitan`);
   } catch (e) {
     console.error('Guess load error:', e.message);
   }
@@ -120,15 +124,24 @@ export async function handleGuessGame(message) {
 
     const victoryEmbed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle('🎉 BRAVO!')
-      .setDescription(`**<@${message.author.id}> je pogodio broj ${state.currentNumber}!**\n\n⏱️ Trajanje: **${duration}s**\n🎯 Pokušaji: **${state.attempts}**\n💰 Nagrada: **$${state.reward}**\n\n📢 Sledeća runda za **30 minuta**`)
+      .setTitle(`${emoji('celebration')} BRAVO!`)
+      .setDescription(
+        `**<@${message.author.id}> je pogodio broj ${state.currentNumber}!**\n\n` +
+        `${emoji('timer')} Trajanje: **${duration}s**\n` +
+        `${emoji('target')} Pokušaji: **${state.attempts}**\n` +
+        `${emoji('wallet')} Nagrada: **$${state.reward}**\n\n` +
+        `${emoji('clock')} Sledeća runda za **30 minuta**`
+      )
       .setTimestamp();
 
-    await message.reply({ embeds: [victoryEmbed] });
+    return message.reply({ embeds: [victoryEmbed] });
+
   } else {
     // Hint
-    const hint = guess < state.currentNumber ? '📈 Broj je VEĆI!' : '📉 Broj je MANJI!';
-    await message.react(guess < state.currentNumber ? '⬆️' : '⬇️').catch(() => {});
+    const hint = guess < state.currentNumber ? `${emoji('up')} Broj je VEĆI!` :
+                                               `${emoji('down')} Broj je MANJI!`;
+
+    await message.react(guess < state.currentNumber ? emoji('up') : emoji('down')).catch(() => {});
   }
 }
 
@@ -165,8 +178,12 @@ export function startGuessGameScheduler(client) {
 
       const startEmbed = new EmbedBuilder()
         .setColor(0x2ECC71)
-        .setTitle(`🎲 Nova Runda - ${config.name}`)
-        .setDescription(`**Pogodite broj između ${min} i ${max}!**\n\n💰 Nagrada: **$${config.reward}**\n⏱️ Vreme: **10 minuta**`)
+        .setTitle(`${emoji('dice')} Nova Runda - ${config.name}`)
+        .setDescription(
+          `**Pogodite broj između ${min} i ${max}!**\n\n` +
+          `${emoji('wallet')} Nagrada: **$${config.reward}**\n` +
+          `${emoji('timer')} Vreme: **10 minuta**`
+        )
         .setTimestamp();
 
       await channel.send({ embeds: [startEmbed] });
@@ -177,8 +194,8 @@ export function startGuessGameScheduler(client) {
 
           const timeoutEmbed = new EmbedBuilder()
             .setColor(0xE74C3C)
-            .setTitle('⏰ Vreme Isteklo')
-            .setDescription(`Niko nije pogodio!\n\n🎯 Broj je bio: **${number}**`);
+            .setTitle(`${emoji('clock')} Vreme Isteklo`)
+            .setDescription(`Niko nije pogodio!\n\n${emoji('target')} Broj je bio: **${number}**`);
 
           await channel.send({ embeds: [timeoutEmbed] });
         }
@@ -189,7 +206,7 @@ export function startGuessGameScheduler(client) {
     setInterval(startRound, ROUND_INTERVAL);
   }
 
-  console.log('🎲 Guess Game Scheduler started!');
+  console.log(`${emoji('repeat')} Guess Game Scheduler started!`);
 }
 
 // ========== COMMAND ==========
@@ -197,25 +214,18 @@ export async function execute(message, args) {
   const subcommand = args[0]?.toLowerCase();
 
   if (subcommand === 'start') {
-    // Svi mogu start - bez provere dozvola
-    
-    const available = [];
-    for (const cfg of Object.values(GAME_CHANNELS)) {
-      if (!cfg) continue;
-      available.push(cfg);
-    }
+    const available = Object.values(GAME_CHANNELS);
 
     if (available.length === 0) {
-      return message.reply('❌ Nema dostupnih game kanala!');
+      return message.reply(`${emoji('error')} Nema dostupnih game kanala!`);
     }
 
     const selected = available[Math.floor(Math.random() * available.length)];
     const channelId = message.channelId;
     
-    // Proveri da li je već igra aktivna u kanalu
     const existingState = gameStates.get(channelId);
     if (existingState?.isActive) {
-      return message.reply('❌ Igra je već aktivna u ovom kanalu!');
+      return message.reply(`${emoji('error')} Igra je već aktivna u ovom kanalu!`);
     }
 
     const [min, max] = selected.range;
@@ -235,8 +245,12 @@ export async function execute(message, args) {
 
     const startEmbed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle(`🎲 Nova Runda - ${selected.name}`)
-      .setDescription(`**Pogodite broj između ${min} i ${max}!**\n\n💰 Nagrada: **$${selected.reward}**\n⏱️ Vreme: **10 minuta**`)
+      .setTitle(`${emoji('dice')} Nova Runda - ${selected.name}`)
+      .setDescription(
+        `**Pogodite broj između ${min} i ${max}!**\n\n` +
+        `${emoji('wallet')} Nagrada: **$${selected.reward}**\n` +
+        `${emoji('timer')} Vreme: **10 minuta**`
+      )
       .setTimestamp();
 
     await message.channel.send({ embeds: [startEmbed] });
@@ -247,8 +261,8 @@ export async function execute(message, args) {
 
         const timeoutEmbed = new EmbedBuilder()
           .setColor(0xE74C3C)
-          .setTitle('⏰ Vreme Isteklo')
-          .setDescription(`Niko nije pogodio!\n\n🎯 Broj je bio: **${number}**`);
+          .setTitle(`${emoji('clock')} Vreme Isteklo`)
+          .setDescription(`Niko nije pogodio!\n\n${emoji('target')} Broj je bio: **${number}**`);
 
         await message.channel.send({ embeds: [timeoutEmbed] });
       }
@@ -262,7 +276,7 @@ export async function execute(message, args) {
     const lb = leaderboards.get(channelId);
 
     if (!lb || lb.size === 0) {
-      return message.reply('📊 Nema podataka na leaderboardu!');
+      return message.reply(`${emoji('info')} Nema podataka na leaderboardu!`);
     }
 
     const sorted = Array.from(lb.entries())
@@ -271,13 +285,20 @@ export async function execute(message, args) {
 
     const lines = sorted.map((e, i) => {
       const avg = Math.round(e[1].totalAttempts / e[1].wins);
-      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-      return `${medal} <@${e[0]}> - 🏆 **${e[1].wins}** | ⚡ **${e[1].fastestTime}s** | 📊 **${avg}** pokušaja`;
+      const medal =
+        i === 0 ? emoji('medal_gold') :
+        i === 1 ? emoji('medal_silver') :
+        i === 2 ? emoji('medal_bronze') :
+        `${i + 1}.`;
+
+      return `${medal} <@${e[0]}> - ${emoji('trophy')} **${e[1].wins}** | ` +
+             `${emoji('lightning')} **${e[1].fastestTime}s** | ` +
+             `${emoji('stats')} **${avg}** pokušaja`;
     });
 
     const embed = new EmbedBuilder()
       .setColor(0xFFD700)
-      .setTitle('🏆 Guess Game Leaderboard')
+      .setTitle(`${emoji('trophy')} Guess Game Leaderboard`)
       .setDescription(lines.join('\n'));
 
     return message.reply({ embeds: [embed] });
@@ -285,8 +306,12 @@ export async function execute(message, args) {
 
   const helpEmbed = new EmbedBuilder()
     .setColor(0x2596BE)
-    .setTitle('🎲 Guess Game')
-    .setDescription('Igra se automatski svakih 30 minuta!\n\n`-guess start` - Pokreni rundu\n`-guess lb` - Leaderboard');
+    .setTitle(`${emoji('dice')} Guess Game`)
+    .setDescription(
+      `Igra se automatski svakih 30 minuta!\n\n` +
+      `\`-guess start\` - Pokreni rundu\n` +
+      `\`-guess lb\` - Leaderboard`
+    );
 
   return message.reply({ embeds: [helpEmbed] });
 }
