@@ -1,7 +1,21 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
-import { COOLDOWNS, CRIME_RESPONSES } from '../../utils/constants.js';
-import embeds from '../../utils/embeds.js';
+import { initUser, updateUser } from '../../database/userDB.js';
+import { emoji } from '../../utils/emojis.js';
+
+const COOLDOWNS = {
+  CRIME: 4 * 60 * 60 * 1000
+};
+
+const CRIME_RESPONSES = [
+  'Opljačkao si prodavnicu!',
+  'Ukrao si auto!',
+  'Provalio si u kuću!',
+  'Prodao si drogu!',
+  'Opljačkao si banku!',
+  'Ukrao si bioskopski aparat!',
+  'Provalio si u muzej!',
+  'Opljačkao si restoran!'
+];
 
 export const meta = {
   name: 'crime',
@@ -15,14 +29,13 @@ export async function execute(message, args) {
   if (user.lastCrime && now - user.lastCrime < COOLDOWNS.CRIME) {
     const remaining = Math.ceil((COOLDOWNS.CRIME - (now - user.lastCrime)) / 1000 / 60);
 
-    return message.reply({
-      embeds: [
-        embeds.warning(
-          'Cooldown',
-          `Možeš ponovo počiniti zločin za **${remaining}** minuta!`
-        )
-      ]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xF39C12)
+      .setTitle(`${emoji('clock')} Cooldown`)
+      .setDescription(`Možeš ponovo počiniti zločin za **${remaining}** minuta!`)
+      .setTimestamp();
+
+    return message.reply({ embeds: [embed] });
   }
 
   const response = CRIME_RESPONSES[Math.floor(Math.random() * CRIME_RESPONSES.length)];
@@ -36,7 +49,7 @@ export async function execute(message, args) {
 
     const embed = new EmbedBuilder()
       .setColor(0x2ECC71)
-      .setTitle(`${emoji('tada')} Zločin Uspešan!`)
+      .setTitle(`${emoji('fire')} Zločin Uspešan!`)
       .setDescription(response)
       .addFields(
         { name: `${emoji('coins')} Zarada`, value: `+$${amount}`, inline: true },

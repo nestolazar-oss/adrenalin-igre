@@ -1,34 +1,79 @@
-export const meta_greroll = {
+import { EmbedBuilder } from 'discord.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { emoji } from '../../utils/emojis.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const GIVEAWAY_FILE = path.join(__dirname, '../../data/giveaways.json');
+
+async function getGiveaways() {
+  try {
+    const data = await fs.readFile(GIVEAWAY_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return {};
+  }
+}
+
+async function saveGiveaways(giveaways) {
+  try {
+    await fs.writeFile(GIVEAWAY_FILE, JSON.stringify(giveaways, null, 2));
+  } catch (e) {
+    console.error('Save error:', e);
+  }
+}
+
+export const meta = {
   name: 'greroll',
   description: 'Reroll pobednika'
 };
 
-export async function execute_greroll(message, args) {
+export async function execute(message, args) {
   if (!message.member.permissions.has('ManageGuild')) {
-    return message.reply(`${emoji('reject')} Nemaš dozvolu!`);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('reject')} Pristup odbijen`)
+      .setDescription('Nemaš dozvolu!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const giveawayId = args[0];
 
   if (!giveawayId) {
-    return message.reply(`${emoji('error')} Koristi: \`-greroll <giveaway_id>\``);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription(`Koristi: \`-greroll <giveaway_id>\``)
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const giveaways = await getGiveaways();
 
   if (!giveaways[giveawayId]) {
-    return message.reply(`${emoji('error')} Giveaway nije pronađen!`);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Giveaway nije pronađen!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const giveaway = giveaways[giveawayId];
 
-  // Izaberi nove pobedinike (isključi prethodne)
   const eligibleParticipants = giveaway.participants.filter(
     p => !giveaway.winners.includes(p)
   );
 
   if (eligibleParticipants.length === 0) {
-    return message.reply(`${emoji('error')} Nema ostalih učesnika!`);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Nema ostalih učesnika!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const newWinners = [];
@@ -42,7 +87,7 @@ export async function execute_greroll(message, args) {
   giveaway.winners = newWinners;
   await saveGiveaways(giveaways);
 
-  // Pošalji DM pobediniku
+  // Pošalji DM pobedniku
   const client = message.client;
   for (const winnerId of newWinners) {
     try {
@@ -66,6 +111,9 @@ export async function execute_greroll(message, args) {
     .setColor(0x2ECC71)
     .setTitle(`${emoji('success')} Reroll Izvršen`)
     .setDescription(`Novi pobednici su odabrani!`)
+    .addFields(
+      { name: `${emoji('trophy')} Pobednika`, value: newWinners.map(id => `<@${id}>`).join(', '), inline: false }
+    )
     .setTimestamp();
 
   return message.reply({ embeds: [embed] });

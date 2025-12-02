@@ -1,12 +1,13 @@
 import { EmbedBuilder } from 'discord.js';
+import { emoji } from '../../utils/emojis.js';
 
-export const meta_serverinfo = {
+export const meta = {
   name: 'serverinfo',
   aliases: ['si'],
   description: 'Informacije o serveru'
 };
 
-export async function execute_serverinfo(message, args) {
+export async function execute(message, args) {
   const guild = message.guild;
   const owner = await guild.fetchOwner();
 

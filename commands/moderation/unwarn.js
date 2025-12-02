@@ -1,72 +1,58 @@
-import { EmbedBuilder } from 'discord.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import embeds from '../../utils/embeds.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const WARNS_FILE = path.join(__dirname, '../../data/warns.json');
-
-async function getWarns() {
-  try {
-    const data = await fs.readFile(WARNS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch {
-    return {};
-  }
-}
-
-async function saveWarns(warns) {
-  await fs.writeFile(WARNS_FILE, JSON.stringify(warns, null, 2));
-}
+import { findUser } from '../../handlers/moderationHandler.js';
+import { removeWarn, getWarns } from '../../handlers/warnsHandler.js';
+import Embeds from '../../utils/embeds.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'unwarn',
-  description: 'Ukloni upozorenje po ID-ju'
+  aliases: ['removewarn', 'rw'],
+  description: 'Ukloni upozorenje korisniku'
 };
 
 export async function execute(message, args) {
   if (!message.member.permissions.has('ModerateMembers')) {
-    return message.reply(embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu za unwarn!`));
+    const embeds = new Embeds(message.client);
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('reject')} Nemaš permisiju!`)]
+    });
   }
 
-  const warnId = args[0];
+  const userInput = args[0];
+  const warnId = parseInt(args[1]);
 
-  if (!warnId) {
-    return message.reply(embeds.error('Greška', `${emoji('error')} Koristi: \`-unwarn <warn_id>\``));
+  if (!userInput || !warnId) {
+    return message.reply(`${emoji('error')} Koristi: \`-unwarn <@user ili ID> <warn_id>\``);
   }
 
-  const warns = await getWarns();
-  const guildId = message.guildId;
-  let found = false;
+  const embeds = new Embeds(message.client);
+  const user = await findUser(message.guild, userInput);
 
-  if (warns[guildId]) {
-    for (const [userId, userWarns] of Object.entries(warns[guildId])) {
-      const index = userWarns.findIndex(w => w.id === warnId);
-      if (index !== -1) {
-        userWarns.splice(index, 1);
-        found = true;
-
-        if (userWarns.length === 0) {
-          delete warns[guildId][userId];
-        }
-
-        break;
-      }
-    }
+  if (!user) {
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('error')} Korisnik nije pronađen!`)]
+    });
   }
 
-  if (!found) {
-    return message.reply(embeds.error('Greška', `${emoji('error')} Upozorenje nije pronađeno!`));
+  const success = await removeWarn(message.guildId, user.id, warnId);
+
+  if (!success) {
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('error')} Upozorenje nije pronađeno!`)]
+    });
   }
 
-  await saveWarns(warns);
+  const warns = await getWarns(message.guildId, user.id);
 
-  const embed = new EmbedBuilder()
-    .setColor(0x2ECC71)
-    .setTitle(`${emoji('success')} Unwarn Izvršen`)
-    .addFields({ name: `${emoji('warning')} Warn ID`, value: warnId, inline: false })
-    .setTimestamp();
+  const embed = embeds.custom({
+    title: `${emoji('success')} Upozorenje Uklonjeno`,
+    description: `Upozorenje #${warnId} za ${user.tag} je uklonjeno.`,
+    color: 0x2ECC71,
+    fields: [
+      { name: `${emoji('warn')} Preostala upozorenja`, value: warns.length.toString(), inline: true }
+    ]
+  });
 
   return message.reply({ embeds: [embed] });
 }
+
+export default { meta, execute };

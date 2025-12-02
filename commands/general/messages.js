@@ -1,30 +1,25 @@
-// messages.js — Canvas verzija statistike poruka
+import { createCanvas, loadImage } from 'canvas';
+import { initUser } from '../../database/userDB.js';
+import { emoji } from '../../utils/emojis.js';
 
-import { createCanvas } from 'canvas';
-import { initUser } from '../../utils/db.js';
-
-export const meta_messages = {
+export const meta = {
   name: 'messages',
   aliases: ['msg'],
   description: 'Prikaži statistiku poruka'
 };
 
-// ===== Helper: Load Avatar =====
 async function loadAvatar(url) {
   try {
     const pngUrl = url.replace(/\.webp/, '.png');
     const res = await fetch(pngUrl);
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-
-    const { loadImage } = await import('canvas');
     return await loadImage(buf);
   } catch {
     return null;
   }
 }
 
-// ===== Canvas Generator =====
 async function generateMessagesCard(user, count) {
   const width = 700;
   const height = 250;
@@ -34,7 +29,6 @@ async function generateMessagesCard(user, count) {
   const gradient = ctx.createLinearGradient(0, 0, width, height);
   gradient.addColorStop(0, '#0a0d24');
   gradient.addColorStop(1, '#1b234d');
-
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
@@ -50,7 +44,6 @@ async function generateMessagesCard(user, count) {
 
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
   ctx.fillRect(250, 40, 400, 170);
-
   ctx.strokeStyle = '#00c3ff';
   ctx.lineWidth = 3;
   ctx.strokeRect(250, 40, 400, 170);
@@ -75,14 +68,18 @@ async function generateMessagesCard(user, count) {
   return canvas.toBuffer('image/png');
 }
 
-// ===== Execute =====
-export async function execute_messages(message, args) {
+export async function execute(message, args) {
   const target = message.mentions.users.first() || message.author;
   const data = initUser(target.id);
   const total = data.messages || 0;
 
   const buffer = await generateMessagesCard(target, total);
-  if (!buffer) return message.reply('⚠️ Greška pri generisanju slike.');
+
+  if (!buffer) {
+    return message.reply(`${emoji('error')} Greška pri generisanju slike.`);
+  }
 
   return message.reply({ files: [{ attachment: buffer, name: 'messages.png' }] });
 }
+
+export default { meta, execute };

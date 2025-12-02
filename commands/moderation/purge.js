@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import embeds from '../../utils/embeds.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'purge',
@@ -9,17 +9,26 @@ export const meta = {
 
 export async function execute(message, args) {
   if (!message.member.permissions.has('ManageMessages')) {
-    return message.channel.send(embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu!`));
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('reject')} Pristup odbijen`)
+      .setDescription('Nemaš dozvolu!')
+      .setTimestamp();
+    return message.channel.send({ embeds: [embed] });
   }
 
   const amount = parseInt(args[0]);
 
   if (isNaN(amount) || amount < 1 || amount > 100) {
-    return message.channel.send(embeds.error('Greška', `${emoji('error')} Broj poruka mora biti 1-100!`));
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Broj poruka mora biti 1-100!')
+      .setTimestamp();
+    return message.channel.send({ embeds: [embed] });
   }
 
   try {
-    // prvo obriši poruku komande da ne napravi problem
     await message.delete().catch(() => {});
 
     const deleted = await message.channel.bulkDelete(amount, true);
@@ -30,13 +39,17 @@ export async function execute(message, args) {
       .addFields({ name: `${emoji('stats')} Obrisano poruka`, value: `${deleted.size}`, inline: true })
       .setTimestamp();
 
-    // koristimo send (NE reply!)
     const info = await message.channel.send({ embeds: [embed] });
 
     setTimeout(() => info.delete().catch(() => {}), 5000);
 
   } catch (error) {
     console.error('Purge error:', error);
-    return message.channel.send(embeds.error('Greška', `${emoji('error')} Nisam mogao obrisati poruke!`));
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Nisam mogao obrisati poruke!')
+      .setTimestamp();
+    return message.channel.send({ embeds: [embed] });
   }
 }

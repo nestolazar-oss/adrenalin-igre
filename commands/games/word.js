@@ -1,17 +1,14 @@
+// commands/games/word.js
 import { AttachmentBuilder, EmbedBuilder } from 'discord.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createCanvas } from 'canvas';
 import srDict from 'dictionary-sr-latn';
-import fetch from 'node-fetch';
-
-// ========== WORD GAME ==========
-export const meta = {
-  name: 'wordgame',
-  aliases: ['wg', 'recrunda', 'rec'],
-  description: 'Word Game - pogdi reč koja je vidljiva'
-};
+import { emoji } from '../../utils/emojis.js';
+import {
+  generateWordRoundImage,
+  generateWordVictoryImage
+} from './word-canvas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +20,7 @@ const playerStats = new Map();
 let WORD_DATABASE = { easy: [], medium: [], hard: [] };
 
 // ========== CONFIG / PATHS ==========
-const LEADERBOARD_DIR = path.join(__dirname, '..', '..', 'data');
+const LEADERBOARD_DIR = path.join(__dirname, '../../data');
 const LEADERBOARD_FILE = path.join(LEADERBOARD_DIR, 'word_game.json');
 const PLAYER_STATS_FILE = path.join(LEADERBOARD_DIR, 'word_stats.json');
 
@@ -51,8 +48,7 @@ const DERIVATIONAL_SUFFIXES = ['ica','čka','čić','čak','čko','ina','ara'];
 
 // ========== UTILITIES ==========
 async function ensureDir() {
-  try { await fs.mkdir(LEADERBOARD_DIR, { recursive: true }); } 
-  catch (e) {}
+  try { await fs.mkdir(LEADERBOARD_DIR, { recursive: true }); } catch (e) {}
 }
 
 async function loadLeaderboards() {
@@ -159,176 +155,6 @@ function isValidGuess(text) {
   return normalized;
 }
 
-// ========== AVATAR LOADER ==========
-async function loadAvatarImage(url) {
-  try {
-    const pngUrl = url.replace(/\?size=\d+/, '').replace(/\.webp/, '.png');
-    const finalUrl = pngUrl.includes('?') ? pngUrl : pngUrl + '?size=256';
-    const res = await fetch(finalUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const arrayBuffer = await res.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const { loadImage } = await import('canvas');
-    const img = await loadImage(buffer);
-    return img;
-  } catch (e) {
-    console.error('Avatar load error:', e.message);
-    return null;
-  }
-}
-
-// ========== IMAGE GENERATOR ==========
-async function generateVictoryImage(username, word, duration, difficulty, avatarUrl) {
-  try {
-    const width = 800;
-    const height = 350;
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
-
-    const grad = ctx.createLinearGradient(0, 0, width, height);
-    grad.addColorStop(0, '#0a0e27');
-    grad.addColorStop(0.5, '#1a1f4d');
-    grad.addColorStop(1, '#0a0e27');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.strokeStyle = 'rgba(0,255,255,0.03)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < width; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
-      ctx.stroke();
-    }
-    for (let i = 0; i < height; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(width, i);
-      ctx.stroke();
-    }
-
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    for (let i = 0; i < 60; i++) {
-      const x = Math.random() * width;
-      const y = Math.random() * height;
-      const size = Math.random() * 2 + 0.5;
-      ctx.fillRect(x, y, size, size);
-    }
-
-    const avatarX = 200;
-    const avatarY = 175;
-    const avatarRadius = 117;
-
-    ctx.fillStyle = 'rgba(0,255,255,0.15)';
-    ctx.beginPath();
-    ctx.arc(avatarX, avatarY, avatarRadius + 40, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(100,200,255,0.08)';
-    ctx.beginPath();
-    ctx.arc(avatarX, avatarY, avatarRadius + 20, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#00FFFF';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = '#00FFFF';
-    ctx.shadowBlur = 25;
-    ctx.beginPath();
-    ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    if (avatarUrl) {
-      try {
-        const img = await loadAvatarImage(avatarUrl);
-        if (img) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(avatarX, avatarY, avatarRadius - 5, 0, Math.PI * 2);
-          ctx.clip();
-          ctx.drawImage(img, avatarX - (avatarRadius - 5), avatarY - (avatarRadius - 5), (avatarRadius - 5) * 2, (avatarRadius - 5) * 2);
-          ctx.restore();
-        }
-      } catch (e) {
-        console.error('Avatar render error:', e.message);
-      }
-    }
-
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 20;
-    ctx.textAlign = 'left';
-
-    let xText = 460;
-    let yStart = 70;
-    let lineGap = 90;
-
-    ctx.font = 'bold 32px "Arial", sans-serif';
-    ctx.fillStyle = '#AAAAAA';
-    ctx.fillText('POBEDNIK:', xText, yStart);
-
-    ctx.font = 'bold 32px "Arial", sans-serif';
-    ctx.fillStyle = '#00FFFF';
-    ctx.shadowColor = 'rgba(0, 255, 255, 0.5)';
-    ctx.shadowBlur = 15;
-    ctx.fillText(username.toUpperCase(), xText, yStart + 35);
-    ctx.shadowBlur = 0;
-
-    yStart += lineGap;
-    ctx.font = 'bold 32px "Arial", sans-serif';
-    ctx.fillStyle = '#AAAAAA';
-    ctx.fillText('VREME:', xText, yStart);
-
-    ctx.font = 'bold 32px "Arial", sans-serif';
-    ctx.fillStyle = '#FFD700';
-    ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
-    ctx.shadowBlur = 15;
-    ctx.fillText(`${duration}s`, xText, yStart + 35);
-    ctx.shadowBlur = 0;
-
-    yStart += lineGap;
-    ctx.font = 'bold 32px "Arial", sans-serif';
-    ctx.fillStyle = '#AAAAAA';
-    ctx.fillText('REC:', xText, yStart);
-
-    ctx.font = 'bold 32px "Arial", sans-serif';
-    ctx.fillStyle = '#00FF88';
-    ctx.shadowColor = 'rgba(0, 255, 136, 0.5)';
-    ctx.shadowBlur = 15;
-    ctx.fillText(word.toUpperCase(), xText, yStart + 35);
-    ctx.shadowBlur = 0;
-
-    ctx.font = '18px "Arial", sans-serif';
-    ctx.fillStyle = '#888888';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 10;
-    ctx.fillText('discord.gg/adrenalin', width / 2, height - 20);
-    ctx.shadowBlur = 0;
-
-    const badgeX = width - 80;
-    const badgeY = 30;
-    const diffColor = difficulty === 'easy' ? '#00FF88' : difficulty === 'medium' ? '#FFD700' : '#FF4444';
-    const diffText = difficulty === 'easy' ? 'LAKO' : difficulty === 'medium' ? 'SREDNJE' : 'TESKO';
-
-    ctx.fillStyle = `rgba(${difficulty === 'easy' ? '0,255,136' : difficulty === 'medium' ? '255,215,0' : '255,68,68'},0.15)`;
-    ctx.fillRect(badgeX - 60, badgeY - 20, 120, 40);
-
-    ctx.strokeStyle = diffColor;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(badgeX - 60, badgeY - 20, 120, 40);
-
-    ctx.font = 'bold 16px "Arial", sans-serif';
-    ctx.fillStyle = diffColor;
-    ctx.textAlign = 'center';
-    ctx.fillText(diffText, badgeX, badgeY + 5);
-
-    return canvas.toBuffer('image/png');
-  } catch (e) {
-    console.error('Canvas error:', e);
-    return null;
-  }
-}
-
 // ========== GAME HANDLER ==========
 export async function handleWordGame(message) {
   try {
@@ -360,7 +186,20 @@ export async function handleWordGame(message) {
       await savePlayerStats();
 
       const avatarUrl = message.author.displayAvatarURL?.({ format: 'png', size: 256 });
-      const imageBuffer = await generateVictoryImage(message.author.username, state.word, duration, config.difficulty, avatarUrl);
+
+      let imageBuffer = null;
+      try {
+        imageBuffer = await generateWordVictoryImage(
+          message.author.username,
+          duration,
+          avatarUrl,
+          state.word,
+          config.name
+        );
+      } catch (err) {
+        console.error('Victory canvas error:', err);
+        imageBuffer = null;
+      }
 
       if (imageBuffer) {
         const attachment = new AttachmentBuilder(imageBuffer, { name: 'victory.png' });
@@ -413,13 +252,13 @@ function updatePlayerStats(userId, duration, difficulty) {
 function isValidGameWord(word, allWordsSet) {
   if (!word || word.length < 3 || word.length > 15) return false;
   if (!/^[a-zčćžšđ]+$/i.test(word)) return false;
-  
+
   const normalized = word.toLowerCase();
-  
+
   for (const suffix of DERIVATIONAL_SUFFIXES) {
     if (normalized.endsWith(suffix) && normalized.length > suffix.length + 2) {
       const baseForm = normalized.slice(0, -suffix.length);
-      
+
       if (allWordsSet.has(baseForm)) {
         if ((suffix === 'čko' || suffix === 'čka') && baseForm.length <= 4) {
           return true;
@@ -428,7 +267,7 @@ function isValidGameWord(word, allWordsSet) {
       }
     }
   }
-  
+
   return true;
 }
 
@@ -441,7 +280,7 @@ async function initializeWordDatabaseWithFiltering() {
 
     const wordLines = lines.slice(1);
     const allWordsSet = new Set(wordLines.map(w => w.toLowerCase()));
-    
+
     console.log(`📚 Učitavam ${wordLines.length} reči iz Hunspell rečnika...`);
 
     const allWords = [];
@@ -449,7 +288,7 @@ async function initializeWordDatabaseWithFiltering() {
 
     for (const word of wordLines) {
       const normalized = word.toLowerCase();
-      
+
       if (!normalized || normalized.length < 3 || normalized.length > 15) {
         rejected.shortlong++;
         continue;
@@ -463,17 +302,16 @@ async function initializeWordDatabaseWithFiltering() {
         rejected.stopwords++;
         continue;
       }
-      
+
       if (!isValidGameWord(normalized, allWordsSet)) {
         rejected.derived++;
         continue;
       }
-      
+
       allWords.push(normalized);
     }
 
     console.log(`✅ Validnih reči: ${allWords.length}`);
-    console.log(`📊 Odbijeno: Derivirane: ${rejected.derived}, Stopwords: ${rejected.stopwords}, Kratke/duge: ${rejected.shortlong}, Nevaljane: ${rejected.invalid}`);
 
     if (allWords.length === 0) {
       throw new Error('Nema validnih reči nakon filtriranja');
@@ -545,24 +383,37 @@ export function startWordGameScheduler(client) {
           startTime: Date.now(),
           timeouts: [],
           attempts: 0,
-          difficulty: config.difficulty
+          difficulty: config.difficulty,
+          seconds: config.timeLimit
         };
         guildGames.set(channelId, state);
 
         const wordLength = word.length;
-        const newRoundEmbed = new EmbedBuilder()
-          .setColor(config.difficulty === 'easy' ? 0x00FF88 : config.difficulty === 'medium' ? 0xFFD700 : 0xFF4444)
-          .setTitle(`${emoji('chat')} NOVA RUNDA - ${config.name.toUpperCase()}`)
-          .setDescription(`🎮 **POGDI REC!**\n\n**Reč: ${word.toUpperCase()}**\n\nImaš **${config.timeLimit} sekundi** da napišeš ovu reč!\n\n📏 Reč ima **${wordLength} slova**`)
-          .addFields(
-            { name: '📝 Upustva', value: 'Kucaj reč direktno u kanal. Ko brže pogodi - taj je pobednik!', inline: false },
-            { name: `${emoji('clock')} Vreme`, value: `**${config.timeLimit}s**`, inline: true },
-            { name: `${emoji('repeat')} Težina`, value: `**${config.name}**`, inline: true }
-          )
-          .setFooter({ text: 'discord.gg/adrenalin | Srecno!' })
-          .setTimestamp();
 
-        await gameChannel.send({ embeds: [newRoundEmbed] }).catch(() => {});
+        try {
+          const imageBuffer = await generateWordRoundImage(
+            word,
+            wordLength,
+            config.timeLimit,
+            config.name.toUpperCase()
+          );
+          if (imageBuffer) {
+            const attachment = new AttachmentBuilder(imageBuffer, { name: 'runda.png' });
+            await gameChannel.send({ files: [attachment] }).catch(() => {});
+          } else {
+            throw new Error('No image buffer returned');
+          }
+        } catch (err) {
+          const embed = new EmbedBuilder()
+            .setColor(config.difficulty === 'easy' ? 0x00FF88 : config.difficulty === 'medium' ? 0xFFD700 : 0xFF4444)
+            .setTitle(`${emoji('chat')} NOVA RUNDA - ${config.name.toUpperCase()}`)
+            .setDescription(`**Reč: ${word.toUpperCase()}**\n\nImaš **${config.timeLimit} sekundi**!\n\n📏 **${wordLength} slova**`)
+            .setFooter({ text: 'discord.gg/adrenalin' })
+            .setTimestamp();
+
+          await gameChannel.send({ embeds: [embed] }).catch(() => {});
+          console.error('Round canvas error:', err);
+        }
 
         const resetTimeout = setTimeout(async () => {
           if (state.isActive) {
@@ -572,8 +423,7 @@ export function startWordGameScheduler(client) {
             const timeoutEmbed = new EmbedBuilder()
               .setColor(0xFF4444)
               .setTitle('⏰ VREME ISTEKLO!')
-              .setDescription(`Niko nije pogodio reč!\n\n🎯 **Reč je bila: ${state.word.toUpperCase()}**`)
-              .addFields({ name: '📖 Odgovor', value: `**${state.word.toUpperCase()}**`, inline: false })
+              .setDescription(`Niko nije pogodio!\n\n🎯 **Reč je bila: ${state.word.toUpperCase()}**`)
               .setFooter({ text: 'Sledeca runda za 30 minuta!' })
               .setTimestamp();
 
@@ -592,15 +442,18 @@ export function startWordGameScheduler(client) {
     console.log('📖 Word Game Scheduler started!');
   });
 }
+
 // ========== COMMAND EXECUTOR ==========
-export async function execute(message, args, context) {
-  const { OWNER_ID, PREFIX, isWhitelisted } = context;
+export const meta = {
+  name: 'wordgame',
+  aliases: ['wg', 'rec'],
+  description: 'Word Game - pogodi reč'
+};
+
+export async function execute(message, args) {
   const subcommand = args[0]?.toLowerCase();
-  const userAllowed = message.author.id === OWNER_ID || isWhitelisted(message.member);
 
   if (subcommand === 'start') {
-    if (!userAllowed) return message.reply('Samo vlasnik ili whitelistovani mogu startovati igru.');
-
     const availableChannels = [];
     for (const config of Object.values(GAME_CHANNELS)) {
       const channelId = process.env[config.envVar];
@@ -611,7 +464,7 @@ export async function execute(message, args, context) {
     }
 
     if (availableChannels.length === 0) {
-      return message.reply(`${emoji('error')} Nema dostupnih game channels! Provjeri .env varijable.`);
+      return message.reply(`${emoji('error')} Nema dostupnih game channels!`);
     }
 
     const selected = availableChannels[Math.floor(Math.random() * availableChannels.length)];
@@ -625,7 +478,7 @@ export async function execute(message, args, context) {
     clearAllTimers(guildId, channelId);
 
     const wordList = WORD_DATABASE[config.difficulty] || [];
-    if (!wordList.length) return message.reply(`${emoji('error')} Nema dostupnih reči za ovu težinu!`);
+    if (!wordList.length) return message.reply(`${emoji('error')} Nema dostupnih reči!`);
 
     const word = wordList[Math.floor(Math.random() * wordList.length)];
     const state = {
@@ -636,27 +489,38 @@ export async function execute(message, args, context) {
       startTime: Date.now(),
       timeouts: [],
       attempts: 0,
-      difficulty: config.difficulty
+      difficulty: config.difficulty,
+      seconds: config.timeLimit
     };
     guildGames.set(channelId, state);
 
-    // Build and send the embed for the round
     const wordLength = word.length;
-    const newRoundEmbed = new EmbedBuilder()
-      .setColor(config.difficulty === 'easy' ? 0x00FF88 : config.difficulty === 'medium' ? 0xFFD700 : 0xFF4444)
-      .setTitle(`${CUSTOM_EMOJIES.rec ?? emoji('chat')} NOVA RUNDA - ${config.name.toUpperCase()}`)
-      .setDescription(`🎮 **POGODI REC!**\n\n**Reč: ${word.toUpperCase()}**\n\nImaš **${config.timeLimit} sekundi** da napišeš ovu reč!\n\n📏 Reč ima **${wordLength} slova**`)
-      .addFields(
-        { name: '📝 Upustva', value: 'Kucaj reč direktno u kanal. Ko brže pogodi - taj je pobednik!', inline: false },
-        { name: `${CUSTOM_EMOJIES.vreme} Vreme`, value: `**${config.timeLimit}s**`, inline: true },
-        { name: `${CUSTOM_EMOJIES.fastest} Težina`, value: `**${config.name}**`, inline: true }
-      )
-      .setFooter({ text: 'discord.gg/adrenalin | Srecno!' })
-      .setTimestamp();
 
-    await gameChannel.send({ embeds: [newRoundEmbed] }).catch(() => {});
+    try {
+      const imageBuffer = await generateWordRoundImage(
+        word,
+        wordLength,
+        config.timeLimit,
+        config.name.toUpperCase()
+      );
+      if (imageBuffer) {
+        const attachment = new AttachmentBuilder(imageBuffer, { name: 'runda.png' });
+        await gameChannel.send({ files: [attachment] }).catch(() => {});
+      } else {
+        throw new Error('No image buffer returned');
+      }
+    } catch (err) {
+      const embed = new EmbedBuilder()
+        .setColor(config.difficulty === 'easy' ? 0x00FF88 : config.difficulty === 'medium' ? 0xFFD700 : 0xFF4444)
+        .setTitle(`${emoji('chat')} NOVA RUNDA - ${config.name.toUpperCase()}`)
+        .setDescription(`**Reč: ${word.toUpperCase()}**\n\nImaš **${config.timeLimit} sekundi**!`)
+        .setFooter({ text: 'discord.gg/adrenalin' })
+        .setTimestamp();
 
-    // Set timeout for round expiration
+      await gameChannel.send({ embeds: [embed] }).catch(() => {});
+      console.error('Round canvas error (manual start):', err);
+    }
+
     const resetTimeout = setTimeout(async () => {
       if (state.isActive) {
         state.isActive = false;
@@ -665,8 +529,7 @@ export async function execute(message, args, context) {
         const timeoutEmbed = new EmbedBuilder()
           .setColor(0xFF4444)
           .setTitle('⏰ VREME ISTEKLO!')
-          .setDescription(`Niko nije pogodio reč!\n\n🎯 **Reč je bila: ${state.word.toUpperCase()}**`)
-          .addFields({ name: '📖 Odgovor', value: `**${state.word.toUpperCase()}**`, inline: false })
+          .setDescription(`Niko nije pogodio!\n\n🎯 **Reč je bila: ${state.word.toUpperCase()}**`)
           .setFooter({ text: 'Sledeca runda za 30 minuta!' })
           .setTimestamp();
 
@@ -676,14 +539,13 @@ export async function execute(message, args, context) {
 
     state.timeouts.push(resetTimeout);
 
-    // Confirm to the command issuer (optional)
     const confirmEmbed = new EmbedBuilder()
       .setColor(0x00FF88)
       .setTitle('✅ Word Game runda pokrenuta!')
       .setDescription(`Igra je pokrenuta u <#${channelId}>\nReč: **${word.toUpperCase()}** (${wordLength} slova)\nTežina: **${config.name}**`);
 
     return message.reply({ embeds: [confirmEmbed] });
-  } // end subcommand start
+  }
 
   if (subcommand === 'leaderboard' || subcommand === 'lb') {
     const guildId = message.guildId;
@@ -706,7 +568,7 @@ export async function execute(message, args, context) {
       const wins = e[1].wins || 0;
       const fastest = (e[1].fastestTime === Infinity || !isFinite(e[1].fastestTime)) ? 'N/A' : `${e[1].fastestTime}s`;
       const avg = wins ? Math.round(e[1].totalTime / wins) : 0;
-      return `${i + 1}. <@${e[0]}> - ${CUSTOM_EMOJIES.pobedu} **${wins}** | ${CUSTOM_EMOJIES.fastest} **${fastest}** | ${CUSTOM_EMOJIES.average} **${avg}s**`;
+      return `${i + 1}. <@${e[0]}> - ${emoji('trophy')} **${wins}** | ⚡ **${fastest}** | ⏱️ **${avg}s**`;
     });
 
     const embed = new EmbedBuilder()
@@ -720,111 +582,22 @@ export async function execute(message, args, context) {
   if (subcommand === 'stats' || subcommand === 'profile') {
     const userId = message.mentions.users.first()?.id || message.author.id;
     const stats = playerStats.get(userId) || { totalWins: 0, avgTime: 0, bestTime: Infinity, difficulties: {} };
-    const diffLines = Object.entries(stats.difficulties || {}).map(([diff, data]) => `> **${diff}:** ${CUSTOM_EMOJIES.pobedu} ${data.wins} | ${CUSTOM_EMOJIES.fastest} ${data.bestTime}s`).join('\n') || 'Nema podataka po tezini.';
+    const diffLines = Object.entries(stats.difficulties || {}).map(([diff, data]) => `> **${diff}:** ${emoji('trophy')} ${data.wins} | ⚡ ${data.bestTime}s`).join('\n') || 'Nema podataka.';
 
     const embed = new EmbedBuilder()
       .setColor(0x00A8FF)
       .setTitle('📊 Statistika')
-      .setDescription(`<@${userId}>\n\n${CUSTOM_EMOJIES.pobedu} **Ukupno pobeda:** ${stats.totalWins || 0}\n${CUSTOM_EMOJIES.average} **Prosečno vreme:** ${stats.avgTime || 0}s\n${CUSTOM_EMOJIES.fastest} **Najbolje vreme:** ${stats.bestTime === Infinity ? 'N/A' : stats.bestTime + 's'}\n\n${diffLines}`);
+      .setDescription(`<@${userId}>\n\n${emoji('trophy')} **Pobeda:** ${stats.totalWins || 0}\n⏱️ **Prosek:** ${stats.avgTime || 0}s\n⚡ **Najbolje:** ${stats.bestTime === Infinity ? 'N/A' : stats.bestTime + 's'}\n\n${diffLines}`);
 
     return message.reply({ embeds: [embed] });
   }
 
-  if (!userAllowed) return message.reply('Samo vlasnik ili whitelistovani mogu koristiti ovu komandu.');
-
   const helpEmbed = new EmbedBuilder()
     .setColor(0x00A8FF)
     .setTitle('📖 Word Game')
-    .setDescription(
-      `Igra se automatski svakih 30 minuta u game kanalima\n\n` +
-      `\`${PREFIX}wg start\` - Pokreni rundu manuelno\n` +
-      `\`${PREFIX}wg lb\` - Leaderboard\n` +
-      `\`${PREFIX}wg stats\` - Tvoja statistika\n` +
-      `\`${PREFIX}wg stats @korisnik\` - Statistika drugog korisnika`
-    );
+    .setDescription(`Igra se automatski svakih 30 minuta!\n\n\`-wg start\` - Pokreni rundu\n\`-wg lb\` - Leaderboard\n\`-wg stats\` - Statistika`);
 
   return message.reply({ embeds: [helpEmbed] });
-} // end execute()
-
-
-// ========== SCHEDULER HELPERS (optional) ==========
-/**
- * startRandomRound - runs a single round on all configured channels
- * This is separated from execute so you can call it from a scheduler or manually.
- */
-export async function startRandomRound() {
-  try {
-    for (const config of Object.values(GAME_CHANNELS)) {
-      const channelId = process.env[config.envVar];
-      if (!channelId) continue;
-
-      const gameChannel = global.client.channels.cache.get(channelId);
-      if (!gameChannel) continue;
-
-      const guildId = gameChannel.guildId;
-      const channelIdLocal = gameChannel.id;
-      if (!gameStates.has(guildId)) gameStates.set(guildId, new Map());
-      const guildGames = gameStates.get(guildId);
-
-      clearAllTimers(guildId, channelIdLocal);
-
-      const wordList = WORD_DATABASE[config.difficulty] || [];
-      if (!wordList.length) continue;
-
-      const word = wordList[Math.floor(Math.random() * wordList.length)];
-      const state = {
-        channel: gameChannel,
-        word,
-        wordNormalized: normalizeForCompare(word),
-        isActive: true,
-        startTime: Date.now(),
-        timeouts: [],
-        attempts: 0,
-        difficulty: config.difficulty
-      };
-      guildGames.set(channelIdLocal, state);
-
-      const wordLength = word.length;
-      const newRoundEmbed = new EmbedBuilder()
-        .setColor(config.difficulty === 'easy' ? 0x00FF88 : config.difficulty === 'medium' ? 0xFFD700 : 0xFF4444)
-        .setTitle(`${CUSTOM_EMOJIES.rec ?? emoji('chat')} NOVA RUNDA - ${config.name.toUpperCase()}`)
-        .setDescription(`🎮 **POGODI REC!**\n\n**Reč: ${word.toUpperCase()}**\n\nImaš **${config.timeLimit} sekundi** da napišeš ovu reč!\n\n📏 Reč ima **${wordLength} slova**`)
-        .addFields(
-          { name: '📝 Upustva', value: 'Kucaj reč direktno u kanal. Ko brže pogodi - taj je pobednik!', inline: false },
-          { name: `${CUSTOM_EMOJIES.vreme} Vreme`, value: `**${config.timeLimit}s**`, inline: true },
-          { name: `${CUSTOM_EMOJIES.fastest} Težina`, value: `**${config.name}**`, inline: true }
-        )
-        .setFooter({ text: 'discord.gg/adrenalin | Srecno!' })
-        .setTimestamp();
-
-      await gameChannel.send({ embeds: [newRoundEmbed] }).catch(() => {});
-
-      const resetTimeout = setTimeout(async () => {
-        if (state.isActive) {
-          state.isActive = false;
-          clearAllTimers(guildId, channelIdLocal);
-
-          const timeoutEmbed = new EmbedBuilder()
-            .setColor(0xFF4444)
-            .setTitle('⏰ VREME ISTEKLO!')
-            .setDescription(`Niko nije pogodio reč!\n\n🎯 **Reč je bila: ${state.word.toUpperCase()}**`)
-            .addFields({ name: '📖 Odgovor', value: `**${state.word.toUpperCase()}**`, inline: false })
-            .setFooter({ text: 'Sledeca runda za 30 minuta!' })
-            .setTimestamp();
-
-          await gameChannel.send({ embeds: [timeoutEmbed] }).catch(() => {});
-        }
-      }, config.timeLimit * 1000);
-
-      state.timeouts.push(resetTimeout);
-    }
-  } catch (e) {
-    console.error('startRandomRound error:', e);
-  }
 }
 
-//
-
-// ========== EXPORTS ==========
-export { gameStates, leaderboards, playerStats, WORD_DATABASE };
 export default { meta, execute, handleWordGame, startWordGameScheduler };

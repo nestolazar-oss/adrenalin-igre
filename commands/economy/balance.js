@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, getUser, getAllUsers } from '../../utils/db.js';
+import { initUser, getUser, getAllUsers } from '../../database/userDB.js'
+import { emoji } from '../../utils/emojis.js';
 import embeds from '../../utils/embeds.js';
 
 export const meta = {
@@ -20,7 +21,7 @@ export async function execute(message, args) {
   
   const embed = new EmbedBuilder()
     .setColor(0x2596BE)
-    .setTitle(`${emoji('coins')} ${user.username} - Bankovni račun`)
+    .setTitle(`${emoji('bank')} ${user.username} - Bankovni račun`)
     .setThumbnail(user.displayAvatarURL({ dynamic: true }))
     .addFields(
       { name: `${emoji('cash')} Gotovina`, value: `$${userData.cash.toLocaleString()}`, inline: true },

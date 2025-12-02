@@ -1,7 +1,10 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
-import { COOLDOWNS } from '../../utils/constants.js';
-import embeds from '../../utils/embeds.js';
+import { initUser, updateUser } from '../../database/userDB.js';
+import { emoji } from '../../utils/emojis.js';
+
+const COOLDOWNS = {
+  ROB: 4 * 60 * 60 * 1000
+};
 
 export const meta = {
   name: 'rob',
@@ -12,21 +15,30 @@ export async function execute(message, args) {
   const target = message.mentions.users.first();
 
   if (!target) {
-    return message.reply({
-      embeds: [embeds.error('Greška', 'Označi korisnika za pljačku!')]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Označi korisnika za pljačku!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   if (target.id === message.author.id) {
-    return message.reply({
-      embeds: [embeds.error('Greška', 'Ne možeš pljačkati sam sebe!')]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Ne možeš pljačkati sam sebe!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   if (target.bot) {
-    return message.reply({
-      embeds: [embeds.error('Greška', 'Ne možeš pljačkati botove!')]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Ne možeš pljačkati botove!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const robber = initUser(message.author.id);
@@ -36,15 +48,23 @@ export async function execute(message, args) {
   if (robber.lastRob && now - robber.lastRob < COOLDOWNS.ROB) {
     const remaining = Math.ceil((COOLDOWNS.ROB - (now - robber.lastRob)) / 1000 / 60);
 
-    return message.reply({
-      embeds: [embeds.warning('Cooldown', `Možeš ponovo pljačkati za **${remaining}** minuta!`)]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xF39C12)
+      .setTitle(`${emoji('clock')} Cooldown`)
+      .setDescription(`Možeš ponovo pljačkati za **${remaining}** minuta!`)
+      .setTimestamp();
+
+    return message.reply({ embeds: [embed] });
   }
 
   if (victim.cash === 0) {
-    return message.reply({
-      embeds: [embeds.warning('Pljačka', `${target.tag} nema gotovine!`)]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xF39C12)
+      .setTitle(`${emoji('warning')} Pljačka`)
+      .setDescription(`${target.tag} nema gotovine!`)
+      .setTimestamp();
+
+    return message.reply({ embeds: [embed] });
   }
 
   const success = Math.random() > 0.4;

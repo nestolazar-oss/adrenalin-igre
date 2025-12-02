@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
+import { initUser, updateUser } from '../../database/userDB.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -181,7 +181,7 @@ export function startGuessGameScheduler(client) {
         .setTitle(`${emoji('dice')} Nova Runda - ${config.name}`)
         .setDescription(
           `**Pogodite broj između ${min} i ${max}!**\n\n` +
-          `${emoji('wallet')} Nagrada: **$${config.reward}**\n` +
+          `${emoji('gift')} Nagrada: **$${config.reward}**\n` +
           `${emoji('timer')} Vreme: **10 minuta**`
         )
         .setTimestamp();

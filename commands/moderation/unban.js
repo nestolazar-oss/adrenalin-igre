@@ -1,37 +1,58 @@
-import { EmbedBuilder } from 'discord.js';
-import embeds from '../../utils/embeds.js';
+import { removeBan } from '../../handlers/bansHandler.js';
+import Embeds from '../../utils/embeds.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'unban',
+  aliases: ['removeban', 'ub'],
   description: 'Ukloni ban sa korisnika'
 };
 
 export async function execute(message, args) {
   if (!message.member.permissions.has('BanMembers')) {
-    return message.reply(embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu za unban!`));
+    const embeds = new Embeds(message.client);
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('reject')} Nemaš permisiju za unban!`)]
+    });
   }
 
-  const userId = args[0];
+  const userInput = args[0];
+  const reason = args.slice(1).join(' ') || 'Bez razloga';
 
-  if (!userId) {
-    return message.reply(embeds.error('Greška', `${emoji('error')} Koristi: \`-unban <user_id>\``));
+  if (!userInput) {
+    return message.reply(`${emoji('error')} Koristi: \`-unban <ID> [razlog]\``);
   }
+
+  const embeds = new Embeds(message.client);
 
   try {
-    await message.guild.bans.remove(userId, 'Unban');
+    // Unban samo sa ID-om
+    if (!/^\d+$/.test(userInput)) {
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('error')} Koristi ID korisnika, ne mention!`)]
+      });
+    }
 
-    const embed = new EmbedBuilder()
-      .setColor(0x2ECC71)
-      .setTitle(`${emoji('success')} Unban Izvršen`)
-      .addFields(
-        { name: `${emoji('info')} Korisnik ID`, value: userId, inline: true },
-        { name: `${emoji('stats')} Moderator`, value: `${message.author.tag}`, inline: true }
-      )
-      .setTimestamp();
+    await message.guild.bans.remove(userInput, reason);
+
+    // Ažurira bazu - označi ban kao neaktivan
+    await removeBan(message.guildId, userInput);
+
+    const embed = embeds.custom({
+      title: `${emoji('success')} Ban Uklonjen`,
+      description: `Korisnik ID: \`${userInput}\` je debannovan.`,
+      color: 0x2ECC71,
+      fields: [
+        { name: `${emoji('info')} Razlog`, value: reason, inline: false }
+      ]
+    });
 
     return message.reply({ embeds: [embed] });
-  } catch (error) {
-    console.error('Unban error:', error);
-    return message.reply(embeds.error('Greška', `${emoji('error')} Korisnik nije banovan!`));
+  } catch (e) {
+    return message.reply({
+      embeds: [embeds.error('Greška', `Greška pri unbanu: ${e.message}`)]
+    });
   }
 }
+
+export default { meta, execute };

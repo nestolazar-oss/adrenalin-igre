@@ -1,7 +1,23 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
-import { COOLDOWNS, JOBS } from '../../utils/constants.js';
-import embeds from '../../utils/embeds.js';
+import { initUser, updateUser } from '../../database/userDB.js';
+import { emoji } from '../../utils/emojis.js';
+
+const COOLDOWNS = {
+  WORK: 4 * 60 * 60 * 1000
+};
+
+const JOBS = [
+  'Programer',
+  'Dizajner',
+  'Manager',
+  'Inženjer',
+  'Učitelj',
+  'Doktor',
+  'Hemičar',
+  'Arhitekta',
+  'Analitičar',
+  'Konsultant'
+];
 
 export const meta = {
   name: 'work',
@@ -15,14 +31,13 @@ export async function execute(message, args) {
   if (user.lastWork && now - user.lastWork < COOLDOWNS.WORK) {
     const remaining = Math.ceil((COOLDOWNS.WORK - (now - user.lastWork)) / 1000 / 60);
 
-    return message.reply({
-      embeds: [
-        embeds.warning(
-          "Cooldown",
-          `Možeš ponovo raditi za **${remaining}** minuta!`
-        )
-      ]
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xF39C12)
+      .setTitle(`${emoji('clock')} Cooldown`)
+      .setDescription(`Možeš ponovo raditi za **${remaining}** minuta!`)
+      .setTimestamp();
+
+    return message.reply({ embeds: [embed] });
   }
 
   const job = JOBS[Math.floor(Math.random() * JOBS.length)];
@@ -34,9 +49,11 @@ export async function execute(message, args) {
 
   const embed = new EmbedBuilder()
     .setColor(0x2ECC71)
-    .setTitle(`${emoji('tada')} Rad Kompletan!`)
+    .setTitle(`${emoji('survey')} Rad Kompletan!`)
     .setDescription(`Radio si kao **${job}** i zaradio si **$${earnings}**`)
-    .addFields({ name: `${emoji('cash')} Nova gotovina`, value: `$${user.cash.toLocaleString()}` })
+    .addFields(
+      { name: `${emoji('coins')} Nova gotovina`, value: `$${user.cash.toLocaleString()}`, inline: false }
+    )
     .setTimestamp();
 
   return message.reply({ embeds: [embed] });

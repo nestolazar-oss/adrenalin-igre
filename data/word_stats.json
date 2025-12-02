@@ -1,9 +1,9 @@
 {
   "799107594404495413": {
-    "totalWins": 7,
-    "totalTime": 79,
-    "avgTime": 11,
-    "bestTime": 4,
+    "totalWins": 36,
+    "totalTime": 465,
+    "avgTime": 13,
+    "bestTime": 3,
     "difficulties": {
       "medium": {
         "wins": 2,
@@ -14,8 +14,8 @@
         "bestTime": 4
       },
       "easy": {
-        "wins": 4,
-        "bestTime": 10
+        "wins": 33,
+        "bestTime": 3
       }
     }
   },

@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
+import { initUser, updateUser } from '../../database/userDB.js';
 
 export const meta = {
   name: 'roulette',

@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
-import embeds from '../../utils/embeds.js';
+import { initUser, updateUser } from '../../database/userDB.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'withdraw',
@@ -13,7 +13,12 @@ export async function execute(message, args) {
   let amount = args[0];
 
   if (!amount) {
-    return message.reply(embeds.error('Greška', `Koristi: \`-with <amount|all|half>\``));
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription(`Koristi: \`-with <amount|all|half>\``)
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   if (amount === 'all') {
@@ -25,11 +30,21 @@ export async function execute(message, args) {
   }
 
   if (isNaN(amount) || amount <= 0) {
-    return message.reply(embeds.error('Greška', 'Unesite validan iznos!'));
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Unesite validan iznos!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   if (amount > user.bank) {
-    return message.reply(embeds.error('Greška', `Nemate toliko u banci! Imate: $${user.bank.toLocaleString()}`));
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription(`Nemate toliko u banci! Imate: $${user.bank.toLocaleString()}`)
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   user.bank -= amount;

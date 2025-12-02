@@ -23,7 +23,7 @@ export async function execute(message) {
     { id: 'giveaway', name: 'Giveaway', emoji: emoji('gift') },
     { id: 'moderation', name: 'Moderation', emoji: emoji('hammer') },
     { id: 'tickets', name: 'Tickets', emoji: emoji('ticket') },
-    { id: 'admin', name: 'Admin', emoji: emoji('wrench') }
+    { id: 'admin', name: 'Admin', emoji: emoji('wrench') },
   ];
 
   // MAIN EMBED
@@ -109,7 +109,7 @@ export async function execute(message) {
           { name: '`-trivia`', value: 'Trivia kviz', inline: false },
           { name: '`-riddle`', value: 'Zagonetke', inline: false },
           { name: '`-memory <bet>`', value: 'Memory igra', inline: false },
-          { name: '`-word`', value: 'Pogodi reč', inline: false }
+          { name: '`-wg`', value: 'Pogodi reč (auto runde)', inline: false }
         );
     }
 

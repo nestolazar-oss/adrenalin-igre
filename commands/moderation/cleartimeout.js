@@ -1,40 +1,63 @@
-import { EmbedBuilder } from 'discord.js';
-import embeds from '../../utils/embeds.js';
+import { findUser } from '../../handlers/moderationHandler.js';
+import Embeds from '../../utils/embeds.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'cleartimeout',
-  aliases: ['unmute'],
+  aliases: ['unmute', 'untimeout', 'ct', 'um'],
   description: 'Ukloni timeout sa korisnika'
 };
 
 export async function execute(message, args) {
   if (!message.member.permissions.has('ModerateMembers')) {
-    return message.reply(embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu!`));
+    const embeds = new Embeds(message.client);
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('reject')} Nemaš permisiju!`)]
+    });
   }
 
-  const target = message.mentions.users.first();
+  const userInput = args[0];
+  const reason = args.slice(1).join(' ') || 'Bez razloga';
 
-  if (!target) {
-    return message.reply(embeds.error('Greška', `${emoji('error')} Označi korisnika!`));
+  if (!userInput) {
+    return message.reply(`${emoji('error')} Koristi: \`-cleartimeout <@user ili ID> [razlog]\``);
   }
 
-  const member = await message.guild.members.fetch(target.id).catch(() => null);
+  const embeds = new Embeds(message.client);
+  const user = await findUser(message.guild, userInput);
+
+  if (!user) {
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('error')} Korisnik nije pronađen!`)]
+    });
+  }
+
+  const member = await message.guild.members.fetch(user.id).catch(() => null);
+
   if (!member) {
-    return message.reply(embeds.error('Greška', `${emoji('error')} Korisnik nije na serveru!`));
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('error')} Korisnik nije na serveru!`)]
+    });
   }
 
   try {
-    await member.timeout(null);
+    await member.timeout(null, reason);
 
-    const embed = new EmbedBuilder()
-      .setColor(0x2ECC71)
-      .setTitle(`${emoji('success')} Timeout Uklonjen`)
-      .addFields({ name: `${emoji('info')} Korisnik`, value: `${target.tag}`, inline: true })
-      .setTimestamp();
+    const embed = embeds.custom({
+      title: `${emoji('success')} Timeout Uklonjen`,
+      description: `${user.tag} je oslobođen timeout-a.`,
+      color: 0x2ECC71,
+      fields: [
+        { name: `${emoji('info')} Razlog`, value: reason, inline: false }
+      ]
+    });
 
     return message.reply({ embeds: [embed] });
-  } catch (error) {
-    console.error('Clear timeout error:', error);
-    return message.reply(embeds.error('Greška', `${emoji('error')} Nisam mogao ukloniti timeout!`));
+  } catch (e) {
+    return message.reply({
+      embeds: [embeds.error('Greška', `Greška pri cleartimeout: ${e.message}`)]
+    });
   }
 }
+
+export default { meta, execute };

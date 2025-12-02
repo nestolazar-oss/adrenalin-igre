@@ -1,11 +1,12 @@
 import { EmbedBuilder, version } from 'discord.js';
+import { emoji } from '../../utils/emojis.js';
 
-export const meta_botinfo = {
+export const meta = {
   name: 'botinfo',
   description: 'Informacije o botu'
 };
 
-export async function execute_botinfo(message, args) {
+export async function execute(message, args) {
   const bot = message.client.user;
   const owner = await message.client.users.fetch(process.env.OWNER_ID);
 

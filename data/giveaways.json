@@ -9,5 +9,33 @@
     "participants": [],
     "winners": [],
     "status": "ACTIVE"
+  },
+  "1764593576411-0np73weo2": {
+    "messageId": "1445034937517346929",
+    "channelId": "1434628287199445176",
+    "guildId": "1434628286239211785",
+    "prize": "3 nitra 1",
+    "winnersCount": 1,
+    "endsAt": 1764593636411,
+    "participants": [],
+    "winners": [],
+    "status": "ACTIVE"
+  },
+  "1764629741562-o7a6mgxse": {
+    "messageId": "1445186624890736730",
+    "channelId": "1434913779899961456",
+    "guildId": "1434639128456069223",
+    "prize": "test",
+    "winnersCount": 1,
+    "endsAt": 1764629801562,
+    "participants": [
+      "799107594404495413"
+    ],
+    "winners": [
+      "799107594404495413"
+    ],
+    "status": "ENDED",
+    "createdBy": "tininlaki",
+    "createdAt": "2025-12-01T22:55:42.105Z"
   }
 }

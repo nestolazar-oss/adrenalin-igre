@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
+import { initUser, updateUser } from '../../database/userDB.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'addmoney',
@@ -11,18 +12,33 @@ export async function execute(message, args) {
   const OWNER_ID = process.env.OWNER_ID || '799107594404495413';
   
   if (message.author.id !== OWNER_ID) {
-    return message.reply(`${emoji('reject')} Samo vlasnik bota može koristiti ovu komandu!`);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('reject')} Pristup odbijen`)
+      .setDescription('Samo vlasnik bota može koristiti ovu komandu!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const target = message.mentions.users.first();
   const amount = parseInt(args[1]);
 
   if (!target) {
-    return message.reply(`${emoji('error')} Označi korisnika! Koristi: \`-addmoney @user <amount>\``);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription(`Označi korisnika! Koristi: \`-addmoney @user <amount>\``)
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   if (isNaN(amount) || amount <= 0) {
-    return message.reply(`${emoji('error')} Unesite validan iznos!`);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription('Unesite validan iznos!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const user = initUser(target.id);

@@ -2,6 +2,7 @@ import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'disc
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { emoji } from '../../utils/emojis.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GIVEAWAY_FILE = path.join(__dirname, '../../data/giveaways.json');
@@ -41,21 +42,35 @@ export const meta = {
 
 export async function execute(message, args) {
   if (!message.member.permissions.has('ManageGuild')) {
-    return message.reply(`${emoji('reject')} Nemaš dozvolu!`);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('reject')} Pristup odbijen`)
+      .setDescription('Nemaš dozvolu!')
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const durationStr = args[0];
   const prize = args.slice(1).join(' ');
-  const winnersCount = parseInt(args[args.length - 1]) || 1;
 
   if (!durationStr || !prize) {
-    return message.reply(`${emoji('error')} Koristi: \`-gstart <10m|1h|1d> <nagrada> [broj pobednika]\``);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription(`Koristi: \`-gstart <10m|1h|1d> <nagrada>\``)
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   // Parse vremena
   const match = durationStr.match(/(\d+)([smhd])/);
   if (!match) {
-    return message.reply(`${emoji('error')} Format: \`10m|1h|1d\``);
+    const embed = new EmbedBuilder()
+      .setColor(0xE74C3C)
+      .setTitle(`${emoji('error')} Greška`)
+      .setDescription(`Format: \`10m|1h|1d\``)
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   const amount = parseInt(match[1]);
@@ -73,7 +88,7 @@ export async function execute(message, args) {
     .setDescription(`**Klikni na dugme ispod da se prijlaviš!**`)
     .addFields(
       { name: `${emoji('trophy')} Nagrada`, value: prize, inline: true },
-      { name: `${emoji('stats')} Pobednika`, value: winnersCount.toString(), inline: true },
+      { name: `${emoji('stats')} Pobednika`, value: '1', inline: true },
       { name: `${emoji('clock')} Završava`, value: `<t:${Math.floor(endsAt / 1000)}:R>`, inline: true }
     )
     .setFooter({ text: `ID: ${giveawayId}` })
@@ -97,22 +112,24 @@ export async function execute(message, args) {
     channelId: message.channel.id,
     guildId: message.guild.id,
     prize,
-    winnersCount,
+    winnersCount: 1,
     endsAt,
     participants: [],
     winners: [],
-    status: 'ACTIVE'
+    status: 'ACTIVE',
+    createdBy: message.author.tag,
+    createdAt: new Date().toISOString()
   };
 
   await saveGiveaways(giveaways);
 
-  // Post embed
+  // Post confirmation embed
   const postEmbed = new EmbedBuilder()
     .setColor(0x2ECC71)
     .setTitle(`${emoji('success')} Giveaway Kreiran`)
     .addFields(
       { name: 'Nagrada', value: prize, inline: true },
-      { name: 'Pobednika', value: winnersCount.toString(), inline: true },
+      { name: 'Trajanje', value: durationStr, inline: true },
       { name: 'ID', value: giveawayId, inline: true }
     )
     .setTimestamp();
@@ -125,38 +142,66 @@ export async function execute(message, args) {
   }, duration);
 }
 
-// ============================================
-// commands/giveaway/gend.js
-// ============================================
-export const meta_gend = {
-  name: 'gend',
-  description: 'Završi giveaway'
-};
+async function selectWinners(giveawayId, client) {
+  try {
+    const giveaways = await getGiveaways();
+    const giveaway = giveaways[giveawayId];
 
-export async function execute_gend(message, args) {
-  if (!message.member.permissions.has('ManageGuild')) {
-    return message.reply(`${emoji('reject')} Nemaš dozvolu!`);
+    if (!giveaway) return;
+
+    giveaway.status = 'ENDED';
+
+    if (giveaway.participants.length === 0) {
+      // Nema učesnika
+      const channel = client.channels.cache.get(giveaway.channelId);
+      if (channel) {
+        const embed = new EmbedBuilder()
+          .setColor(0xE74C3C)
+          .setTitle(`${emoji('error')} Giveaway Završen`)
+          .setDescription(`Nema učesnika! Nagrada: **${giveaway.prize}**`)
+          .setTimestamp();
+
+        await channel.send({ embeds: [embed] }).catch(() => {});
+      }
+    } else {
+      // Odaberi pobednika
+      const winner = giveaway.participants[Math.floor(Math.random() * giveaway.participants.length)];
+      giveaway.winners = [winner];
+
+      const channel = client.channels.cache.get(giveaway.channelId);
+      if (channel) {
+        const embed = new EmbedBuilder()
+          .setColor(0x2ECC71)
+          .setTitle(`${emoji('trophy')} Giveaway Završen!`)
+          .setDescription(`Pobednik: <@${winner}>\nNagrada: **${giveaway.prize}**`)
+          .addFields(
+            { name: `${emoji('stats')} Učesnika`, value: giveaway.participants.length.toString(), inline: true }
+          )
+          .setTimestamp();
+
+        await channel.send({ embeds: [embed] }).catch(() => {});
+      }
+
+      // Pošalji DM pobedniku
+      try {
+        const user = await client.users.fetch(winner);
+        const dmEmbed = new EmbedBuilder()
+          .setColor(0x2ECC71)
+          .setTitle(`${emoji('trophy')} ČESTITAM! Pobedio si Giveaway!`)
+          .setDescription(`Nagrada: **${giveaway.prize}**`)
+          .addFields(
+            { name: 'Info', value: 'Odgovori sa "YES" u roku od 10 sekundi da potvrdis!', inline: false }
+          )
+          .setTimestamp();
+
+        await user.send({ embeds: [dmEmbed] });
+      } catch (e) {
+        console.error('DM error:', e);
+      }
+    }
+
+    await saveGiveaways(giveaways);
+  } catch (e) {
+    console.error('selectWinners error:', e);
   }
-
-  const giveawayId = args[0];
-
-  if (!giveawayId) {
-    return message.reply(`${emoji('error')} Koristi: \`-gend <giveaway_id>\``);
-  }
-
-  const giveaways = await getGiveaways();
-
-  if (!giveaways[giveawayId]) {
-    return message.reply(`${emoji('error')} Giveaway nije pronađen!`);
-  }
-
-  await selectWinners(giveawayId, message.client);
-
-  const embed = new EmbedBuilder()
-    .setColor(0x2ECC71)
-    .setTitle(`${emoji('success')} Giveaway Završen`)
-    .setDescription(`Pobednici su odabrani!`)
-    .setTimestamp();
-
-  return message.reply({ embeds: [embed] });
 }

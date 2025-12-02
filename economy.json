@@ -1,84 +1,108 @@
 {
   "users": {
-    "user_id": {
-      "cash": 1000,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
-    "799107594404495413": {
-      "cash": 100,
-      "bank": 2177869,
-      "lastWork": 1764455728023,
-      "lastCrime": 1763925405492,
-      "lastSlut": 1763925286440,
-      "lastRob": 1763925431105
-    },
-    "765277872524623912": {
-      "cash": 58908,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
-    "470529920351600642": {
-      "cash": 1014,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
-    "1061164654346371123": {
-      "cash": 87447,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
-    "1281704981560299630": {
-      "cash": 0,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
     "1210682883413377065": {
-      "cash": 49100,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
-    "1439062988316479714": {
-      "cash": 1900,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
-    },
-    "493851010951806978": {
-      "cash": 1000,
-      "bank": 0,
-      "lastWork": 0,
-      "lastCrime": 0,
-      "lastSlut": 0,
-      "lastRob": 0
+      "messages": 13
     },
     "1402049528185618572": {
-      "cash": 1200,
+      "cash": 1000,
       "bank": 0,
       "lastWork": 0,
       "lastCrime": 0,
       "lastSlut": 0,
-      "lastRob": 0
+      "lastRob": 0,
+      "messages": 71
+    },
+    "1267867320227991642": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 69,
+      "voiceTime": 18
+    },
+    "1387922636067176622": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 8
+    },
+    "1170121065209536675": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 8
+    },
+    "799107594404495413": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 36
+    },
+    "636277737950281768": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 1,
+      "voiceTime": 9
+    },
+    "1061164654346371123": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 26
+    },
+    "470529920351600642": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 11
+    },
+    "967537135525695488": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 4
+    },
+    "463776345923780618": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 22
+    },
+    "1194584874993066054": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 13
     },
     "1411045320489697446": {
       "cash": 1000,
@@ -86,7 +110,62 @@
       "lastWork": 0,
       "lastCrime": 0,
       "lastSlut": 0,
-      "lastRob": 0
+      "lastRob": 0,
+      "messages": 101
+    },
+    "1170797485904642051": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 1
+    },
+    "1078996438282948660": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 15
+    },
+    "1439062988316479714": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 39
+    },
+    "1120100936925331588": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 1
+    },
+    "1380925625115611248": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 7
+    },
+    "1413642502526730320": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 34
     },
     "852683119038300191": {
       "cash": 1000,
@@ -94,15 +173,107 @@
       "lastWork": 0,
       "lastCrime": 0,
       "lastSlut": 0,
-      "lastRob": 0
+      "lastRob": 0,
+      "messages": 2
     },
-    "870742843646410783": {
+    "1275597491043303505": {
       "cash": 1000,
       "bank": 0,
       "lastWork": 0,
       "lastCrime": 0,
       "lastSlut": 0,
-      "lastRob": 0
+      "lastRob": 0,
+      "messages": 14
+    },
+    "643095845444517908": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 9
+    },
+    "1108002079626231880": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 9
+    },
+    "969535662908923954": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 21
+    },
+    "385465135847964672": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 1
+    },
+    "1173243208604586034": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 5
+    },
+    "1441094107954024508": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 1
+    },
+    "1445363030102900847": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 15
+    },
+    "1377362057673838746": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 93
+    },
+    "1405894247332188160": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 63
+    },
+    "1215030436120760381": {
+      "cash": 1000,
+      "bank": 0,
+      "lastWork": 0,
+      "lastCrime": 0,
+      "lastSlut": 0,
+      "lastRob": 0,
+      "messages": 14
     }
   }
 }

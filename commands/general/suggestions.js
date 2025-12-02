@@ -1,142 +1,148 @@
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import embeds from '../../utils/embeds.js';
+import { EmbedBuilder } from 'discord.js';
+import {
+  createSuggestion,
+  updateSuggestionStatus,
+  findSuggestion,
+  getSuggestionsByStatus
+} from '../../handlers/suggestionsHandler.js';
+import Embeds from '../../utils/embeds.js';
+import { emoji } from '../../utils/emojis.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SUGGESTIONS_FILE = path.join(__dirname, '../../data/suggestions.json');
-
-async function ensureSuggestionsFile() {
-  try {
-    await fs.mkdir(path.dirname(SUGGESTIONS_FILE), { recursive: true });
-    try {
-      await fs.access(SUGGESTIONS_FILE);
-    } catch {
-      await fs.writeFile(SUGGESTIONS_FILE, JSON.stringify([], null, 2));
-    }
-  } catch (e) {
-    console.error('Suggestions file error:', e);
-  }
-}
-
-async function getSuggestions() {
-  await ensureSuggestionsFile();
-  try {
-    const data = await fs.readFile(SUGGESTIONS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-async function saveSuggestions(suggestions) {
-  await ensureSuggestionsFile();
-  await fs.writeFile(SUGGESTIONS_FILE, JSON.stringify(suggestions, null, 2));
-}
-
-export const meta_suggestions = {
+export const meta = {
   name: 'suggestion',
+  aliases: ['sug', 'suggest'],
   description: 'Upravljaj sugestijama'
 };
 
-export async function execute_suggestions(message, args) {
+export async function execute(message, args) {
+  const embeds = new Embeds(message.client);
   const action = args[0]?.toLowerCase();
 
   if (action === 'create') {
     const text = args.slice(1).join(' ');
 
-    if (!text) {
-      return message.reply(embeds.error('Greška', `${emoji('error')} Koristi: \`-suggestion create <tekst>\``));
+    if (!text || text.length < 5) {
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('error')} Koristi: \`-suggestion create <tekst>\`\nMinimalno 5 karaktera.`)]
+      });
     }
 
-    const suggestions = await getSuggestions();
-    const suggestionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const suggestion = await createSuggestion(text, message.author.id, message.author.tag);
 
-    const suggestion = {
-      id: suggestionId,
-      author: message.author.tag,
-      authorId: message.author.id,
-      text,
-      status: 'PENDING',
-      upvotes: 0,
-      downvotes: 0,
-      timestamp: new Date().toISOString()
-    };
-
-    suggestions.push(suggestion);
-    await saveSuggestions(suggestions);
-
-    const embed = new EmbedBuilder()
-      .setColor(0x2ECC71)
-      .setTitle(`${emoji('success')} Sugestija Poslana`)
-      .setDescription(text)
-      .addFields(
+    const embed = embeds.custom({
+      title: `${emoji('success')} Sugestija Poslana`,
+      description: text,
+      color: 0x2ECC71,
+      fields: [
         { name: 'Status', value: 'PENDING', inline: true },
-        { name: 'ID', value: suggestionId, inline: true }
-      )
-      .setTimestamp();
+        { name: 'ID', value: suggestion.id, inline: true }
+      ]
+    });
 
     return message.reply({ embeds: [embed] });
   }
 
   if (action === 'accept') {
     if (!message.member.permissions.has('ManageGuild')) {
-      return message.reply(embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu!`));
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu!`)]
+      });
     }
 
     const suggestionId = args[1];
-    const suggestions = await getSuggestions();
-    const suggestion = suggestions.find(s => s.id === suggestionId);
-
-    if (!suggestion) {
-      return message.reply(embeds.error('Greška', `${emoji('error')} Sugestija nije pronađena!`));
+    if (!suggestionId) {
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('error')} Koristi: \`-suggestion accept <ID>\``)]
+      });
     }
 
-    suggestion.status = 'ACCEPTED';
-    await saveSuggestions(suggestions);
+    const suggestion = await updateSuggestionStatus(suggestionId, 'ACCEPTED');
 
-    const embed = new EmbedBuilder()
-      .setColor(0x2ECC71)
-      .setTitle(`${emoji('success')} Sugestija Odobrena`)
-      .setDescription(suggestion.text)
-      .addFields(
+    if (!suggestion) {
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('error')} Sugestija nije pronađena!`)]
+      });
+    }
+
+    const embed = embeds.custom({
+      title: `${emoji('success')} Sugestija Odobrena`,
+      description: suggestion.text,
+      color: 0x2ECC71,
+      fields: [
         { name: 'Autor', value: suggestion.author, inline: true },
         { name: 'Status', value: 'ACCEPTED', inline: true }
-      )
-      .setTimestamp();
+      ]
+    });
 
     return message.reply({ embeds: [embed] });
   }
 
   if (action === 'deny') {
     if (!message.member.permissions.has('ManageGuild')) {
-      return message.reply(embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu!`));
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('reject')} Nemaš dozvolu!`)]
+      });
     }
 
     const suggestionId = args[1];
-    const suggestions = await getSuggestions();
-    const suggestion = suggestions.find(s => s.id === suggestionId);
-
-    if (!suggestion) {
-      return message.reply(embeds.error('Greška', `${emoji('error')} Sugestija nije pronađena!`));
+    if (!suggestionId) {
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('error')} Koristi: \`-suggestion deny <ID>\``)]
+      });
     }
 
-    suggestion.status = 'DENIED';
-    await saveSuggestions(suggestions);
+    const suggestion = await updateSuggestionStatus(suggestionId, 'DENIED');
 
-    const embed = new EmbedBuilder()
-      .setColor(0xE74C3C)
-      .setTitle(`${emoji('reject')} Sugestija Odbijena`)
-      .setDescription(suggestion.text)
-      .addFields(
+    if (!suggestion) {
+      return message.reply({
+        embeds: [embeds.error('Greška', `${emoji('error')} Sugestija nije pronađena!`)]
+      });
+    }
+
+    const embed = embeds.custom({
+      title: `${emoji('reject')} Sugestija Odbijena`,
+      description: suggestion.text,
+      color: 0xE74C3C,
+      fields: [
         { name: 'Autor', value: suggestion.author, inline: true },
         { name: 'Status', value: 'DENIED', inline: true }
-      )
-      .setTimestamp();
+      ]
+    });
 
     return message.reply({ embeds: [embed] });
   }
 
-  return message.reply(embeds.error('Greška', `${emoji('error')} Koristi: \`-suggestion <create|accept|deny> [tekst|id]\``));
+  if (action === 'list' || action === 'pending') {
+    const status = action === 'pending' ? 'PENDING' : args[1]?.toUpperCase() || 'PENDING';
+    const suggestions = await getSuggestionsByStatus(status);
+
+    if (suggestions.length === 0) {
+      return message.reply({
+        embeds: [embeds.info('Info', `Nema sugestija sa statusom: **${status}**`)]
+      });
+    }
+
+    const description = suggestions
+      .slice(0, 10)
+      .map((s, i) => `\`${i + 1}.\` **${s.id}** - ${s.text.slice(0, 50)}... (${s.author})`)
+      .join('\n');
+
+    const embed = embeds.custom({
+      title: `${emoji('menu')} Sugestije - ${status}`,
+      description,
+      color: 0x3498DB
+    });
+
+    return message.reply({ embeds: [embed] });
+  }
+
+  const helpEmbed = embeds.custom({
+    title: `${emoji('info')} Sugestije - Help`,
+    description: `\`-suggestion create <tekst>\` - Kreiraj sugestiju\n\`-suggestion accept <ID>\` - Odobri sugestiju\n\`-suggestion deny <ID>\` - Odbij sugestiju\n\`-suggestion list [STATUS]\` - Prikaži sugestije\n\`-suggestion pending\` - Prikaži pending sugestije`,
+    color: 0x3498DB
+  });
+
+  return message.reply({ embeds: [helpEmbed] });
 }
+
+export default { meta, execute };

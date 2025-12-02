@@ -1,47 +1,52 @@
-import { EmbedBuilder } from 'discord.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import embeds from '../../utils/embeds.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const WARNS_FILE = path.join(__dirname, '../../data/warns.json');
-
-async function getWarns() {
-  try {
-    const data = await fs.readFile(WARNS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch {
-    return {};
-  }
-}
+import { findUser } from '../../handlers/moderationHandler.js';
+import { getWarns } from '../../handlers/warnsHandler.js';
+import Embeds from '../../utils/embeds.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'warnlist',
-  aliases: ['warns'],
+  aliases: ['warnings', 'warns'],
   description: 'Prikaži upozorenja korisnika'
 };
 
 export async function execute(message, args) {
-  const target = message.mentions.users.first() || message.author;
-  const warns = await getWarns();
-  const guildId = message.guildId;
-  const userWarns = warns[guildId]?.[target.id] || [];
+  const userInput = args[0];
 
-  if (userWarns.length === 0) {
-    return message.reply(embeds.error('Info', `${emoji('success')} ${target.tag} nema upozorenja!`));
+  if (!userInput) {
+    return message.reply(`${emoji('error')} Koristi: \`-warnlist <@user ili ID>\``);
   }
 
-  const lines = userWarns.map((w, i) => 
-    `${i + 1}. ${emoji('warning')} **${w.reason}** (${w.moderator})\n   ID: \`${w.id}\``
-  ).join('\n');
+  const embeds = new Embeds(message.client);
+  const user = await findUser(message.guild, userInput);
 
-  const embed = new EmbedBuilder()
-    .setColor(0xF39C12)
-    .setTitle(`${emoji('warn')} Upozorenja`)
-    .setDescription(lines)
-    .setFooter({ text: `Ukupno: ${userWarns.length} | ${target.tag}` })
-    .setTimestamp();
+  if (!user) {
+    return message.reply({
+      embeds: [embeds.error('Greška', `${emoji('error')} Korisnik nije pronađen!`)]
+    });
+  }
+
+  const warns = await getWarns(message.guildId, user.id);
+
+  if (warns.length === 0) {
+    return message.reply({
+      embeds: [embeds.info('Info', `${user.tag} nema upozorenja!`)]
+    });
+  }
+
+  const description = warns
+    .map((w, i) => `**#${w.id}** - ${w.reason}\n> Moderator: ${w.moderator} | ${new Date(w.timestamp).toLocaleDateString()}`)
+    .join('\n\n');
+
+  const embed = embeds.custom({
+    title: `${emoji('warn')} Upozorenja - ${user.tag}`,
+    description,
+    color: 0xF39C12,
+    fields: [
+      { name: `${emoji('tacka')} Ukupno`, value: warns.length.toString(), inline: true }
+    ]
+  });
 
   return message.reply({ embeds: [embed] });
 }
+
+export default { meta, execute };

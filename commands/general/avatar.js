@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
+import { emoji } from '../../utils/emojis.js';
 
 export const meta = {
   name: 'avatar',

@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { initUser, updateUser } from '../../utils/db.js';
+import { initUser, updateUser } from '../../database/userDB.js';
 import embeds from '../../utils/embeds.js';
 
 export const meta_resetstats = {
